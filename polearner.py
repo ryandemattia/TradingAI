@@ -152,18 +152,20 @@ def poloTrader(end, intervalLength, lookoutVal, coins):
     #sellList = []
     sellCoins(coins, curr)
     predict = write_predictions(lookoutVal, intervalLength, coins)
-    sort = sorted(predict.keys(), key=lambda x: (predict[x]['accuracy'], predict[x]['returns']), reverse=True)
+    sort = sorted(predict.keys(), key=lambda x: predict[x]['returns'], reverse=True)
+    print sort
     currentBal = polo.returnBalances()
-    amt = (currentBal['BTC'])/4
+    amt = (currentBal['BTC'])/3
+    #time.sleep(180)
     closeOrders()
-    for i in range(0,4):
+    for i in range(0,len(sort)):
         tick = polo.returnTicker()
         c = sort[i]
         print c
-        if predict[c]['returns'] > 0.0:
+        if predict[c]['accuracy'] > .95 and predict[c]['returns'] > 0.0:
             try:   
                 rt = tick[c]['lowestAsk']*1.0015
-                print 'buying: %s' %(c)
+                print 'buying: %s, returns: %f' %(c, predict[c]['returns'])
                 polo.buy(c, rt, (amt/rt), postOnly=0)
             except:
                 print 'error'
@@ -179,3 +181,4 @@ def poloTrader(end, intervalLength, lookoutVal, coins):
     poloTrader(end, intervalLength, lookoutVal, coins)
                         
 runit(1800, 3)
+
