@@ -11,26 +11,25 @@ import requests
 import re
 import pandas as pd
 import time
-import urllib2
 #import json
-from bittrex import bittrex
+#from bittrex import bittrex
 from sklearn import preprocessing, cross_validation, svm
 from sklearn.linear_model import LinearRegression, Ridge, TheilSenRegressor
 import numpy as np
 from datetime import date, timedelta, datetime 
+import pickle
 
 
 
 
 
 
-
-def getscore_getnext(df, days_ahead, coin):
+def getscore_getnext(df, fc, days_ahead, coin):
 
 
     forecast_val = days_ahead
 
-    forecast_col = 'close'
+    forecast_col = fc
     df.fillna(value=-99999, inplace=True)
     df['label'] = df[forecast_col].shift(-forecast_val)
 
@@ -48,6 +47,7 @@ def getscore_getnext(df, days_ahead, coin):
 
 
     futureX = X[-1:]
+ 
     X = X[:-forecast_val]
     df.dropna(inplace=True)
             
@@ -55,23 +55,24 @@ def getscore_getnext(df, days_ahead, coin):
         
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.15)
     '''
-    inPickle = open('%s.pickle' %(coin), 'rb')
+    inPickle = open('%s-%s.pickle' %(coin, fc), 'rb')
     clf = pickle.load(inPickle)
     '''
     clf = TheilSenRegressor()
             
     clf.fit(X_train, y_train)
     confidence = clf.score(X_test, y_test)
+    #print(futureX)
     #print "accuracy with 1.0 being perfect:", (confidence)
     futureval = clf.predict(futureX)
-    return (confidence, futureval)
+    return futureval[0]
     
-def makeModels(df, days_ahead, coin):
+def makeModels(df, fcol, days_ahead, coin):
 
 
     forecast_val = days_ahead
 
-    forecast_col = 'close'
+    forecast_col = fcol
     df.fillna(value=-99999, inplace=True)
     df['label'] = df[forecast_col].shift(-forecast_val)
 
@@ -99,7 +100,7 @@ def makeModels(df, days_ahead, coin):
     clf = Ridge()
             
     clf.fit(X_train, y_train)
-    with open('%s.pickle' %(coin), 'wb') as f:
+    with open('%s-%s.pickle' %(coin, fcol), 'wb') as f:
         pickle.dump(clf,f)
 
 
@@ -147,7 +148,7 @@ def getBittrex():
 
 def getCryptoGainers():
     resp = requests.get('https://coinmarketcap.com/gainers-losers/')
-    soup = bs.BeautifulSoup(resp.text, "lxml")
+    soup = bs.BeautifulSoup(resp.text)
     sevenDay = soup.find("div", {"id":"losers-1h" })
     tab = sevenDay.find('table')
     body = tab.find('tbody')
@@ -175,6 +176,7 @@ def getCryptoGainers():
     tableDict = {'row': rowNum, 'name': name, 'symbol': symbol, 'volume': volume, 'price': price, 'gains': gains}
     df = pd.DataFrame(tableDict)
     return df
+    
     
 def three_months_back():
     today = datetime.today().strftime('%Y%m%d') 
@@ -223,7 +225,7 @@ def getCryptoHist(coin):
 def getCoinMarkets(coin):
     url = 'https://coinmarketcap.com/currencies/'+coin+'/#markets'
     resp = requests.get(url)
-    soup = bs.BeautifulSoup(resp.text, "lxml")
+    soup = bs.BeautifulSoup(resp.text)
     tab = soup.find('table', {"id": "markets-table"})
     rows = tab.findAll('tr')[1:]
     names = []
@@ -233,8 +235,7 @@ def getCoinMarkets(coin):
         col0 = col[1].text.strip()
         names.append(col0)
     return names
-def getBittrexCoins():
-    resp = requests.get('https://coinmarketcap.com/g')
+
     
 
 bigGuys = getCryptoGainers()
@@ -242,20 +243,20 @@ bigGuys = getCryptoGainers()
 def checkGainersBittrex():
     coins = {}
     for c in bigGuys['name']:
-        print c
+        print (c)
         try:
             marks = getCoinMarkets(c)
             if 'Bittrex' in marks:
                 try:
                     history = getCryptoHist(c)
                     last = history.close.iloc[-1]
-                    preds = getscore_getnext(history, 1, c)
+                    preds = getscore_getnext(history, 'close', 1, c)
                     returns = ((last-preds[1])/preds[1])*100
-                    print c+':', preds[0], returns
+                    print (c+':', preds[0], returns)
                 except:
-                    print 'error'
+                    print ('error')
         except:
-            print 'error getting markets'
+            print ('error getting markets')
 
 def predictBittrex():
     bittrexCoins = getBittrex()
@@ -267,13 +268,13 @@ def predictBittrex():
             try:
                 history = getCryptoHist(c)
                 last = history.close.iloc[-1]
-                avg = history.close.mean()
-                preds = getscore_getnext(history, 1, c)
+                #avg = history.close.mean()
+                preds = getscore_getnext(history, 'close', 1, c)
                 returns = ((last-preds[1][0])/preds[1][0])*100
                 scores[s] = {'accuracy': preds[0], 'returns': returns}
-                print scores[s]
+                print (scores[s])
             except:
-                print 'error'
+                print ('error')
     return scores
         
 
@@ -286,21 +287,21 @@ def sellCoins(api):
             rate = api.getticker(market)['Bid']
             if rate*b['Balance'] > 0.0005:
                 try:
-                    print api.selllimit(market, b['Balance'], rate)
+                    print (api.selllimit(market, b['Balance'], rate))
                 except:
-                    print 'error selling', market 
+                    print ('error selling', market) 
                     
 def buyCoins(preds, api):
     amount = api.getbalance('BTC')['Available']/10
     for c in preds:
-        print c
+        print (c)
         market = 'BTC-'+c
         rate = api.getticker(market)['Ask']
         coinAmnt = amount/rate
         try:
-            print api.buylimit(market, coinAmnt, rate)
+            print (api.buylimit(market, coinAmnt, rate))
         except:
-            print 'error buying', market
+            print ('error buying', market)
         time.sleep(2)
 def bot():
     key = '' 
@@ -314,5 +315,47 @@ def bot():
     time.sleep(7200*4)
     bot()
 
-bot()
-  
+#bot()
+xmr = 'monero'
+
+
+def simulateMonth(coin, numdays):
+    simulation = {}
+    '''
+    for x in hist.keys():
+        nhist = hist
+        print(x)
+        if (x == 'date'):
+            pass
+        else:
+            makeModels(nhist, x, 1, coin)
+    '''
+    hist = getCryptoHist(coin)
+    print(hist.keys())       
+    for i in range(0,numdays):
+        #print(hist)
+        #print(hist['date'][0], hist['close'][0])
+        #print(hist['date'][-1], hist['close'][-1])
+        newRow = {}
+        for x in hist.keys():
+            #print(len(hist[x]), hist[x])
+            if (x == 'date'):
+                print('date or label, ignore')
+            else: 
+                nh = pd.DataFrame(hist)
+                if ((x == 'open') or (x == 'close') or (x == 'high')):
+                    newRow[x] = getscore_getnext(nh, x, 1, coin)
+                else: 
+                    newRow[x] = int(getscore_getnext(nh, x, 1, coin))
+                print(x, newRow[x])
+        newDate = datetime.strptime(hist['date'][-1], '%b %d, %Y')  + timedelta(days = 1)
+        newRow['date'] = datetime.strftime(newDate, '%b %d, %Y')
+        print(newRow['date'])
+        #print(len(hist['volume']), hist['volume'][0])
+        for z in newRow:
+            #print(len(hist[z]), hist[z])
+            hist[z].append(newRow[z])
+            #print(len(hist[z]), z)
+    print(hist['close'], hist['date'])
+simulateMonth('digibyte',10)
+
