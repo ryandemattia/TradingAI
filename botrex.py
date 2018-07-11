@@ -176,11 +176,18 @@ def getCryptoGainers():
     df = pd.DataFrame(tableDict)
     return df
     
-    
+def three_months_back():
+    today = datetime.today().strftime('%Y%m%d') 
+    backDate = datetime.today() - timedelta(days=90)
+    return (today, backDate.strftime('%Y%m%d') )
+
 def getCryptoHist(coin):
-    url = 'https://coinmarketcap.com/currencies/'+coin+'/historical-data/'
+    dates = three_months_back()
+    print(dates)
+    url = 'https://coinmarketcap.com/currencies/'+coin+'/historical-data/?start=%s&end=%s' % (dates[1], dates[0])
+    print(url)
     resp = requests.get(url)
-    soup = bs.BeautifulSoup(resp.text, "lxml")
+    soup = bs.BeautifulSoup(resp.text)
     sevenDay = soup.find("div", {"id":"historical-data" })
     tab = sevenDay.find('table')
     body = tab.find('tbody')
@@ -195,24 +202,24 @@ def getCryptoHist(coin):
     for row in rows:            #pack lists
         col = row.findAll('td')
         col0 = col[0].text.strip()
-        date.append(col0)
+        date.insert(0,col0)
         col1= col[1].text.strip()
-        openPrice.append(float(col1))
+        openPrice.insert(0,float(col1))
         col2 = col[2].text.strip()
-        high.append(float(col2))
+        high.insert(0,float(col2))
         col3 = col[3].text.strip()
-        low.append(float(col3))
+        low.insert(0,float(col3))
         col4 = col[4].text.strip()
-        close.append(float(col4))
+        close.insert(0,float(col4))
         col5 = col[5].text.strip()
         col5 = col5.replace(',', '')
-        volume.append(int(col5))
+        volume.insert(0,int(col5))
         col6 = col[6].text.strip()
         col6 = col6.replace(',', '')
-        marketCap.append(int(col6))
-    tableDict = {'date': date, 'open': openPrice, 'high': high, 'low': volume, 'close': close, 'volume': volume, 'marketCap': marketCap}
-    df = pd.DataFrame(tableDict)
-    return df
+        marketCap.insert(0, int(col6))
+    tableDict = {'date': date, 'open': openPrice, 'high': high, 'low': low, 'close': close, 'volume': volume, 'marketCap': marketCap}
+    #df = pd.DataFrame(tableDict)
+    return tableDict
 def getCoinMarkets(coin):
     url = 'https://coinmarketcap.com/currencies/'+coin+'/#markets'
     resp = requests.get(url)
