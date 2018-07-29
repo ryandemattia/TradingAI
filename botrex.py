@@ -118,7 +118,7 @@ def savesyms():
             f.write('%s\n' %(symbols[i]))
 def getBittrex():
     resp = requests.get('https://coinmarketcap.com/exchanges/bittrex/')
-    soup = bs.BeautifulSoup(resp.text, "lxml")
+    soup = bs.BeautifulSoup(resp.text)
     sevenDay = soup.find("div", {"id":"markets" })
     tab = sevenDay.find('table', {"class": "table"})
     rows = tab.findAll('tr')[1:]
@@ -149,7 +149,7 @@ def getBittrex():
 def getCryptoGainers():
     resp = requests.get('https://coinmarketcap.com/gainers-losers/')
     soup = bs.BeautifulSoup(resp.text)
-    sevenDay = soup.find("div", {"id":"losers-1h" })
+    sevenDay = soup.find("div", {"id":"gainers-7d" })
     tab = sevenDay.find('table')
     body = tab.find('tbody')
     rows = body.findAll('tr')
@@ -180,7 +180,7 @@ def getCryptoGainers():
     
 def three_months_back():
     today = datetime.today().strftime('%Y%m%d') 
-    backDate = datetime.today() - timedelta(days=90)
+    backDate = datetime.today() - timedelta(days=120)
     return (today, backDate.strftime('%Y%m%d') )
 
 def getCryptoHist(coin):
@@ -217,6 +217,8 @@ def getCryptoHist(coin):
         col5 = col5.replace(',', '')
         volume.insert(0,int(col5))
         col6 = col[6].text.strip()
+        if (col6 == '-'):
+            col6 = '0'
         col6 = col6.replace(',', '')
         marketCap.insert(0, int(col6))
     tableDict = {'date': date, 'open': openPrice, 'high': high, 'low': low, 'close': close, 'volume': volume, 'marketCap': marketCap}
@@ -320,42 +322,42 @@ xmr = 'monero'
 
 
 def simulateMonth(coin, numdays):
-    simulation = {}
-    '''
-    for x in hist.keys():
-        nhist = hist
-        print(x)
-        if (x == 'date'):
-            pass
-        else:
-            makeModels(nhist, x, 1, coin)
-    '''
-    hist = getCryptoHist(coin)
-    print(hist.keys())       
-    for i in range(0,numdays):
-        #print(hist)
-        #print(hist['date'][0], hist['close'][0])
-        #print(hist['date'][-1], hist['close'][-1])
-        newRow = {}
-        for x in hist.keys():
-            #print(len(hist[x]), hist[x])
-            if (x == 'date'):
-                print('date or label, ignore')
-            else: 
-                nh = pd.DataFrame(hist)
-                if ((x == 'open') or (x == 'close') or (x == 'high')):
-                    newRow[x] = getscore_getnext(nh, x, 1, coin)
+    try:
+        hist = getCryptoHist(coin)
+        print(hist.keys())       
+        for i in range(0,numdays):
+            newRow = {}
+            for x in hist.keys():
+                #print(x)
+                #print(len(hist[x]), hist[x])
+                if (x == 'date'):
+                    print('date or label, ignore')
                 else: 
-                    newRow[x] = int(getscore_getnext(nh, x, 1, coin))
-                print(x, newRow[x])
-        newDate = datetime.strptime(hist['date'][-1], '%b %d, %Y')  + timedelta(days = 1)
-        newRow['date'] = datetime.strftime(newDate, '%b %d, %Y')
-        print(newRow['date'])
-        #print(len(hist['volume']), hist['volume'][0])
-        for z in newRow:
-            #print(len(hist[z]), hist[z])
-            hist[z].append(newRow[z])
-            #print(len(hist[z]), z)
-    print(hist['close'], hist['date'])
-simulateMonth('digibyte',10)
+                    nh = pd.DataFrame(hist)
+                    if ((x == 'open') or (x == 'close') or (x == 'high')):
+                        newRow[x] = getscore_getnext(nh, x, 1, coin)
+                    else: 
+                        newRow[x] = int(getscore_getnext(nh, x, 1, coin))
+                    print(x, newRow[x])
+            newDate = datetime.strptime(hist['date'][-1], '%b %d, %Y')  + timedelta(days = 1)
+            newRow['date'] = datetime.strftime(newDate, '%b %d, %Y')
+            print(newRow['date'])
+            #print(len(hist['volume']), hist['volume'][0])
+            for z in newRow:
+                print(newRow[z], z)
+                hist[z].append(newRow[z])
+                #print(len(hist[z]), z)
+        print(hist['close'], hist['date'])
+    except:
+        print('could not get coin history')
 
+def loopGainers():
+    gainers = getCryptoGainers()
+    for x in gainers:
+        print(x)
+        x = x.name.replace(' ', '-')
+        x = x.lower()
+        print(x)
+        simulateMonth(x, 3)
+
+simulateMonth('monero', 3)
