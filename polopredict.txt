@@ -1,0 +1,1 @@
+date,coin,lastPrice,nextPrice,accuraccy,returns
