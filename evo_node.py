@@ -2,31 +2,26 @@ import datetime, time
 import pandas
 import numpy as np
 import tensorflow as tf
-class EvoNet:
-    gl = {}
-    buyPower = 0
-    sells = {}
-    buys = {}
+class EvoNode:
     fitnessScore = 0
     lastScore = 0
-    numNodes = 0
-    def __init__(self, parent1, parent2, startAmt):
+    numInNodes = 0
+    def __init__(self, parent1, parent2, startAmt, numNodes):
         buyPower = startAmt
-        numNodes = (parent1.numNodes + parent2.numNodes)/2
-    
-    
+        numInNodes = inNodes
+        numOutNodes = numOutNodes
+        generation = 0 
+        fitness = 0
+        weights = {}
+        def __init__(self, numNodes, gen,  weights = {}):
+            numInNodes = numNodes
+            numOutNodes = numNodes
+            generation = gen
+            weights = weights
 
-    def but_alt(self, coin, amount, price):
-        btc_amnt = (amount * price)
-        if (self.buyPower > btc_amnt):
-            self.buyPower = self.buyPower - btc_amnt
-            self.gl[coin]['amount'] += amount
-            #avg entry price motherfucker
-            self.gl[coin]['price'] = (self.gl[coin]['price'] + price)/2
-        else:
-            print("not enough btc silly")
-
-    def sell_alt(self, )
+        def learn(self, data):
+            for i in range(0, len(data)):
+                 
 class EvoLayer:
 
     def __init__(self):
