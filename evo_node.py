@@ -2,7 +2,6 @@ import datetime, time
 import pandas
 import numpy as np
 import tensorflow as tf
-
 class EvoNet:
     gl = {}
     buyPower = 0
@@ -15,6 +14,8 @@ class EvoNet:
         buyPower = startAmt
         numNodes = (parent1.numNodes + parent2.numNodes)/2
     
+    
+
     def but_alt(self, coin, amount, price):
         btc_amnt = (amount * price)
         if (self.buyPower > btc_amnt):
