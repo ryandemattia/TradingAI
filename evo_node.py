@@ -2,6 +2,8 @@ import datetime, time
 import pandas
 import numpy as np
 import tensorflow as tf
+
+
 class EvoNode:
     fitnessScore = 0
     lastScore = 0
@@ -21,7 +23,7 @@ class EvoNode:
 
         def learn(self, data):
             for i in range(0, len(data)):
-                 
+
 class EvoLayer:
 
     def __init__(self):
