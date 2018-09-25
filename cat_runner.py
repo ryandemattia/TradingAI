@@ -13,10 +13,12 @@ class HistWorker:
         frame = pd.read_csv('./histories/'+fname)
         return frame
 
+    def append_coin_to_col_names(df, c_name):
+        
     def get_file_symbol(f):
     f = f.split("_", 2)
     return f[1]
-    
+
     def __init__(self):
         return self
 
