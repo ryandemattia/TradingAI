@@ -27,6 +27,4 @@ def combine_frames():
     for i in range(1, len(df_list)):
         main = main.join(df_list[i])
     
-    print(main.head())
-
-combine_frames()
+    return main
