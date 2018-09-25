@@ -18,6 +18,7 @@ class HistWorker:
     def get_file_symbol(f):
     f = f.split("_", 2)
     return f[1]
+    
     def combine_frames():
         fileNames = get_hist_files()
         df_list = []

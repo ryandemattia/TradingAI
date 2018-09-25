@@ -3,7 +3,26 @@ import pandas
 import numpy as np
 import tensorflow as tf
 
+class CryptoIndividual:
 
+    def __init__(self, substrate, genotype, phenotype):
+        self.sub = substrate
+        self.geno = genotype
+        self.pheno = phenotype
+
+class CryptoFolio:
+    buys = {}
+    sells = {}
+    ledger = {}
+
+    def __init__(self, start_amount)
+        ledger['BTC'] = start_amount
+
+    def buy_coin(self, c_name, amount):
+        if(amount > self.ledger['BTC']):
+            return
+        else:
+            ledger['BTC']
 class EvoNode:
     fitnessScore = 0
     lastScore = 0
