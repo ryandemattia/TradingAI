@@ -21,18 +21,23 @@ class Cryptolution:
 
 
 class CryptoFolio:
-    buys = {}
-    sells = {}
+
     ledger = {}
 
-    def __init__(self, start_amount)
+    def __init__(self, start_amount):
         ledger['BTC'] = start_amount
 
-    def buy_coin(self, c_name, amount):
-        if(amount > self.ledger['BTC']):
+    def buy_coin(self, c_name, amount, price):
+        if(amount*price > self.ledger['BTC']):
             return
         else:
-            ledger['BTC']
+            self.ledger['BTC'] -= amount * price
+            self.ledger[c_name] += amount
+            return
+    def sell_coin(self, price, amount, c_name):
+        self.ledger[c_name] -= amount
+        self.ledger['BTC'] += amount *price
+    
 
 class CryptoEval:
 
