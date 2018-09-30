@@ -34,11 +34,6 @@ class EvoNode:
         generation = 0 
         fitness = 0
         weights = {}
-        def __init__(self, numNodes, gen,  weights = {}):
-            numInNodes = numNodes
-            numOutNodes = numNodes
-            generation = gen
-            weights = weights
 
         def learn(self, data):
             for i in range(0, len(data)):

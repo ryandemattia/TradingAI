@@ -1,30 +1,63 @@
-import pandas as pd
-import os
-def get_hist_files():
-    histFiles = os.listdir(os.path.join(os.path.dirname(__file__), 'histories'))
-    return histFiles
+import hist_service as hs
 
-def get_data_frame(fname):
-    frame = pd.read_csv('./histories/'+fname)
-    return frame
 
-files = get_hist_files()
 
-def get_file_symbol(f):
-    f = f.split("_", 2)
-    return f[1]
+class Cryptolution:
 
-def combine_frames():
-    fileNames = get_hist_files()
-    df_list = []
-    for x in range(0,len(fileNames)):
-        df = get_data_frame(fileNames[x])
-        col_prefix = get_file_symbol(fileNames[x])
-        df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
-        df_list.append(df)
-    main = df_list[0]
-
-    for i in range(1, len(df_list)):
-        main = main.join(df_list[i])
+    def __init__(generations): #pass number of generations
+        self.histworker = hs.HistWorker()
+        self.num_gens = generations
     
-    return main
+    def one_gen(self):
+        for x in range(len(self.histworker.currentHists[0])):
+            for symbol in self.histworker.currentHists.keys():
+                dataIn = self.histworker.currentHists[symbol]
+                substrate_in = len(dataIn.columns.values)
+
+
+    def data_loop(self):
+        for i in self.num_gens:
+            return i
+
+
+class CryptoFolio:
+    buys = {}
+    sells = {}
+    ledger = {}
+
+    def __init__(self, start_amount)
+        ledger['BTC'] = start_amount
+
+    def buy_coin(self, c_name, amount):
+        if(amount > self.ledger['BTC']):
+            return
+        else:
+            ledger['BTC']
+
+class CryptoEval:
+
+    def __init__(self, portfolio, start_btc, population):
+        self.port = portfolio
+        self.start_amnt = start_btc
+        self.pop = population
+
+    def evaluate(self):
+        self.end_amnt = self.port.get_total_btc
+        perf = self.start_amnt - self.end_amnt
+        return perf
+
+
+class EvoNode:
+    fitnessScore = 0
+    lastScore = 0
+    numInNodes = 0
+    def __init__(self, parent1, parent2, startAmt, numNodes):
+        buyPower = startAmt
+        numInNodes = inNodes
+        numOutNodes = numOutNodes
+        generation = 0 
+        fitness = 0
+        weights = {}
+
+        def learn(self, data):
+            for i in range(0, len(data)):

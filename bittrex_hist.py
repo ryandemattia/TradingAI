@@ -120,5 +120,3 @@ def getCryptoHist(coin):
         marketCap.insert(0, int(col6))
     tableDict = {'date': date, 'open': openPrice, 'high': high, 'low': low, 'close': close, 'volume': volume, 'marketCap': marketCap}
     return tableDict
-
-print(getCryptoHist('monero'))
