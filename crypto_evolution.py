@@ -41,8 +41,8 @@ class CryptoFolio:
 
 class CryptoEval:
 
-    def __init__(self, portfolio, start_btc, population):
-        self.port = portfolio
+    def __init__(self, start_btc, population):
+        self.port = CryptoFolio(start_btc)
         self.start_amnt = start_btc
         self.pop = population
 
