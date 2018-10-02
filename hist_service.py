@@ -8,6 +8,16 @@ from datetime import date, timedelta, datetime
 import os
 from ephemGravityWrapper import gravity as gbaby
 
+'''
+As can be expected by this point, you will notice that 
+nothing done here has been done in the best possible way
+so feel STRONGLY ENCOURAGED TO FORK AND FIX/UPDATE/REFACTOR,
+also for the sake of not running computations for computations 
+sake instead of calculating the actual gravitational pull we
+will just tack on a column of moon distances since its porportional 
+to the gravitational pull
+and occurs at the same intervals
+'''
 class HistWorker:
 
     currentHists = {}
@@ -23,6 +33,7 @@ class HistWorker:
     def get_file_symbol(self, f):
         f = f.split("_", 2)
         return f[1]
+
     def get_data_for_astro(self):
         data = {}
         dates = []
@@ -30,14 +41,21 @@ class HistWorker:
         l_of_frame = len(self.currentHists['DASH']['date'])
         for snoz in range(0, l_of_frame):
             new_date = datetime.utcfromtimestamp((self.currentHists['DASH']['date'][snoz])).strftime('%Y-%m-%d  %H:%M:%S')
-            dates.append(new_date)
+            dates.append(self.currentHists['DASH']['date'][snoz])
             md.append(gbaby.planet_dist(new_date, 'moon'))
         
-        data = {'dates': dates, 'moon_dist': md}
+        data = {'date': dates, 'moon_dist': md}
         data = pd.DataFrame.from_dict(data)
-        return data
+        data.to_csv("moon_dists.txt", encoding="utf-8")
+        #data = data.join(self.currentHists['DASH'].set_index('date'), on='date', how="left").drop('Unnamed: 0', 1)
+        return data.head()
 
-    def pull_polo():
+    def read_in_moon_data(self, df):
+        moon = pd.read_csv('./moon_dists.txt')
+        df = df.drop('Unnamed: 0', 1)
+        return moon.join(df.set_index('date'), on="date")
+
+    def pull_polo(self):
         polo = Poloniex()
         coins = polo.returnTicker()
         tickLen = '7200'
@@ -52,6 +70,7 @@ class HistWorker:
                     frame.to_csv("./histories/"+coin+"_hist.txt", encoding="utf-8")
                 except:
                     print("error reading json")
+        self.get_data_for_astro()
 
     
     def combine_frames(self):
@@ -60,6 +79,7 @@ class HistWorker:
             df = self.get_data_frame(fileNames[x])
             col_prefix = self.get_file_symbol(fileNames[x])
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
+            df = self.read_in_moon_data(df)
             self.currentHists[col_prefix] = df
         '''
         main = df_list[0]
@@ -73,4 +93,4 @@ class HistWorker:
 
     
 hs = HistWorker()
-print(hs.get_data_for_astro())
+print(hs.currentHists['XMR'])
