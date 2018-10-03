@@ -47,7 +47,7 @@ class CryptoFolio:
                 ledger['BTC'] += ledger[c] * current_price
                 ledger[c] = 0
         return ledger['BTC']
-        
+
 class CryptoEval:
 
     def __init__(self, start_btc, population):
