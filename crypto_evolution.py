@@ -28,18 +28,26 @@ class CryptoFolio:
         ledger['BTC'] = start_amount
         start = start_amount
 
-    def buy_coin(self, c_name, amount, price):
+    def buy_coin(self, c_name, amount, price, fee):
         if(amount*price > self.ledger['BTC']):
             return
         else:
-            self.ledger['BTC'] -= amount * price
+            self.ledger['BTC'] -= (amount * price) + fee
             self.ledger[c_name] += amount
             return
     def sell_coin(self, price, amount, c_name):
         self.ledger[c_name] -= amount
-        self.ledger['BTC'] += amount *price
+        self.ledger['BTC'] += (amount * price) - fee
     
-
+    def get_full_btc_value(self, hs, date):
+        
+        for c in self.ledger:
+            if ledger[c] != 0:
+                current_price = hs.currentHists[c][date]['Close']
+                ledger['BTC'] += ledger[c] * current_price
+                ledger[c] = 0
+        return ledger['BTC']
+        
 class CryptoEval:
 
     def __init__(self, start_btc, population):
