@@ -23,9 +23,10 @@ class Cryptolution:
 class CryptoFolio:
 
     ledger = {}
-
+    start = 0
     def __init__(self, start_amount):
         ledger['BTC'] = start_amount
+        start = start_amount
 
     def buy_coin(self, c_name, amount, price):
         if(amount*price > self.ledger['BTC']):
