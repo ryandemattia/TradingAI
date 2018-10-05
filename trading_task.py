@@ -14,7 +14,15 @@ class Trading_Task:
     EPSILON = 1e-100
 
     start_idx = 0
-
+    
+    task_output_actions = {
+        'BUY': 0,
+        'SELL': 0,
+        'HODL': 0,
+    }
+    
+    
+    
 
     def __init__(self):
         self.hs = HistWorker()
