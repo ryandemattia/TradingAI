@@ -1,10 +1,13 @@
 import hist_service as hs
+import datetime, time
+import pandas as pd
+import numpy as np
 
 
 
 class Cryptolution:
 
-    def __init__(generations): #pass number of generations
+    def __init__(self, generations): #pass number of generations
         self.histworker = hs.HistWorker()
         self.num_gens = generations
     
@@ -21,13 +24,20 @@ class Cryptolution:
 
 
 class CryptoFolio:
-
+    
+    
+    fees = {
+        'sell': .01,
+        'buy': .01
+    }
+    
+    
     ledger = {}
     start = 0
     def __init__(self, start_amount):
-        ledger['BTC'] = start_amount
-        start = start_amount
-
+        self.ledger['BTC'] = start_amount
+        self.start = start_amount
+        self.hs = hs.HistWorker()
     def buy_coin(self, c_name, amount, price, fee):
         if(amount*price > self.ledger['BTC']):
             return
@@ -37,16 +47,16 @@ class CryptoFolio:
             return
     def sell_coin(self, price, amount, c_name):
         self.ledger[c_name] -= amount
-        self.ledger['BTC'] += (amount * price) - fee
+        self.ledger['BTC'] += (amount * price) - ((amount * price)*self.fees['sell'])
     
-    def get_full_btc_value(self, hs, date):
+    def get_total_btc_value(self, date):
         
         for c in self.ledger:
-            if ledger[c] != 0:
-                current_price = hs.currentHists[c][date]['Close']
-                ledger['BTC'] += ledger[c] * current_price
-                ledger[c] = 0
-        return ledger['BTC']
+            if self.ledger[c] != 0:
+                current_price = self.hs.currentHists[c][date]['Close']
+                self.ledger['BTC'] += self.ledger[c] * current_price
+                self.ledger[c] = 0
+        return self.ledger['BTC']
 
     def evaluate_output(self, out, ):
         if (out == 1):
@@ -59,23 +69,61 @@ class CryptoEval:
         self.start_amnt = start_btc
         self.pop = population
 
-    def evaluate(self):
-        self.end_amnt = self.port.get_total_btc
+    def evaluate(self, date):
+        self.end_amnt = self.port.get_total_btc_value(date)
         perf = self.start_amnt - self.end_amnt
         return perf
 
 
-class EvoNode:
-    fitnessScore = 0
-    lastScore = 0
-    numInNodes = 0
-    def __init__(self, parent1, parent2, startAmt, numNodes):
-        buyPower = startAmt
-        numInNodes = inNodes
-        numOutNodes = numOutNodes
-        generation = 0 
-        fitness = 0
-        weights = {}
 
-        def learn(self, data):
-            for i in range(0, len(data)):
+class CryptoIndividual:
+
+    def __init__(self, substrate, genotype, phenotype):
+        self.sub = substrate
+        self.geno = genotype
+        self.pheno = phenotype
+
+class EvoLayer:
+
+    def __init__(self):
+        return
+
+class EvoGene:
+
+    def __init__(self):
+        return
+
+class EvoSim:
+    count = 0
+    starting_btc = 1000
+    bestNets = []
+    lastGen = []
+    numNets = 0
+    coins = []
+    market = {}
+    nextGens = []
+    def __init__(self, numberOfNets, coins, gens):
+        self.count += 1
+        self.numNets = numberOfNets
+        self.coins = coins
+        self.lastGen = gens
+        
+    def read_hist(self, coin):
+        try:
+            df = pd.DataFrame.read_csv(coin+'_hist.txt')
+            self.market[coin] = df
+            return
+        except:
+            print("no history file found")
+            return
+    
+    def read_all_hists(self):
+        for c in self.coins:
+            self.read_hist(c)
+            return
+        
+        
+    def feedNet(self, nextGens):
+        for ix in range(0, len(nextGens)):
+            print(ix)
+            

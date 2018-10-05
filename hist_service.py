@@ -92,5 +92,5 @@ class HistWorker:
         return
 
     
-#hs = HistWorker()
-#print(hs.currentHists['XMR'])
+hs = HistWorker()
+print(hs.currentHists['XMR'])
