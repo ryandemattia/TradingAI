@@ -48,6 +48,10 @@ class CryptoFolio:
                 ledger[c] = 0
         return ledger['BTC']
 
+    def evaluate_output(self, out, ):
+        if (out == 1):
+            self.buy_coin
+
 class CryptoEval:
 
     def __init__(self, start_btc, population):

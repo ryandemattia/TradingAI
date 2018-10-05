@@ -9,7 +9,7 @@ from crypto_evolution import CryptoFolio
 # Local
 from peas.peas.networks.rnn import NeuralNetwork
 
-class Trading_task(Object):
+class Trading_Task:
 
     EPSILON = 1e-100
 
@@ -19,6 +19,7 @@ class Trading_task(Object):
     def __init__(self):
         self.hs = HistWorker()
         self.end_idx = len(self.hs.currentHists["DASH"])
+        self.outputs = self.end_idx * 3 # times by three for buy | sell | hodl(pass)
         self.port = CryptoFolio()
         self.strt_amnt = self.port.start
 
