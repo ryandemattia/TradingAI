@@ -28,7 +28,8 @@ class CryptoFolio:
     
     fees = {
         'sell': .01,
-        'buy': .01
+        'buy': .01,
+        'hodl': .01
     }
     
     
