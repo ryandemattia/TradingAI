@@ -18,16 +18,18 @@ will just tack on a column of moon distances since its porportional
 to the gravitational pull
 and occurs at the same intervals
 '''
-class HistWorker:
 
-    currentHists = {}
+'''
+the properties for histworker are set for the most part in combine frames which is called from the constructor
+'''
+class HistWorker:
     
     def get_hist_files(self):
         histFiles = os.listdir(os.path.join(os.path.dirname(__file__), 'histories'))
         return histFiles
 
     def get_data_frame(self, fname):
-        frame = pd.read_csv('./histories/'+fname)
+        frame = pd.read_csv('./histories/'+fname) # timestamps will but used as index    
         return frame
         
     def get_file_symbol(self, f):
@@ -52,8 +54,10 @@ class HistWorker:
 
     def read_in_moon_data(self, df):
         moon = pd.read_csv('./moon_dists.txt')
-        df = df.drop('Unnamed: 0', 1)
-        return moon.join(df.set_index('date'), on="date")
+        moon.set_index("date")
+        moon.drop("Unnamed: 0", 1)
+        df = df.drop('Unnamed: 0', 1).set_index("date")
+        return moon.join(df, on="date")
 
     def pull_polo(self):
         polo = Poloniex()
@@ -78,9 +82,12 @@ class HistWorker:
         for x in range(0,len(fileNames)):
             df = self.get_data_frame(fileNames[x])
             col_prefix = self.get_file_symbol(fileNames[x])
-            #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
+            self.coin_dict[col_prefix] = x
+            #df.drop("Unnamed: 0", 1)
             df = self.read_in_moon_data(df)
-            self.currentHists[col_prefix] = df
+            df = df.drop("Unnamed: 0", 1)
+            df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
+            self.currentHists[x] = np.array(df)
         '''
         main = df_list[0]
         for i in range(1, len(df_list)):
@@ -88,9 +95,12 @@ class HistWorker:
         return main
         '''
     def __init__(self):
+        self.currentHists = {}
+        self.coin_dict = {}
         self.combine_frames()
         return
 
     
 hs = HistWorker()
-print(hs.currentHists['XMR'])
+mon = pd.Series(hs.currentHists)
+print(mon[0][0])

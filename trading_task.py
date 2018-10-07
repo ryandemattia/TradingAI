@@ -15,6 +15,9 @@ from crypto_evolution import CryptoFolio
 from peas.peas.networks.rnn import NeuralNetwork
 from peas.peas.methods import hyperneat
 
+from peas.peas.methods.neat import NEATPopulation, NEATGenotype
+from peas.peas.methods.evolution import SimplePopulation
+
 class Trading_Task:
 
     EPSILON = 1e-100
@@ -64,6 +67,16 @@ class Trading_Task:
         
         network.feed()
 
-    
+    def run
 
-    def run(method, setup, generations=100, popsize=100):    
+
+    def run(generations=100, popsize=100):
+        geno_args = dict(feedforward=True, 
+                         inputs= len(self.hs.currentHists.keys())*self.currentHists['DASH'].shape[1], #we will have standard ticker data and some special factors for each coin
+                         outputs=3*(len(self.hs.currentHists.keys()),
+                         weight_range=(-3.0, 3.0), 
+                         prob_add_conn=0.1, 
+                         prob_add_node=0.03,
+                         bias_as_node=False,
+                         types=['sin', 'bound', 'linear', 'gauss', 'sigmoid', 'abs'])
+            
