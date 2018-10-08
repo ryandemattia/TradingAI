@@ -24,12 +24,6 @@ class Trading_Task:
 
     start_idx = 0
     
-    task_output_actions = {
-        1.0 = 'buy',
-        .5 = 'hodl',
-        0 = 'sell'
-    }
-    
     portfolio_list = []
     
 
@@ -38,7 +32,7 @@ class Trading_Task:
         self.end_idx = len(self.hs.currentHists["DASH"])
         self.inputs = len(self.hs.currentHists)*len(self.currentHists["DASH"].keys())
         self.outputs = self.end_idx * 3 # times by three for buy | sell | hodl(pass)
-        self.strt_amnt = self.port.start
+        self.port = CryptoFolio(1)
 
     
     def set_portfolio_keys(folio):
@@ -66,7 +60,7 @@ class Trading_Task:
             network = NeuralNetwork(network)
         
         network.feed()
-        
+
 
     def run(generations=100, popsize=100):
         geno_args = dict(feedforward=True, 

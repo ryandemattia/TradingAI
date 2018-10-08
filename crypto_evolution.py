@@ -26,29 +26,34 @@ class Cryptolution:
 class CryptoFolio:
     
     #assume we 
-    fees = {
-        'sell': .002,
-        'buy': .002,
-        'hodl': .002
-    }
-    
-    
+    fees = .002
+    target_amount = 0.1
     ledger = {}
     start = 0
     def __init__(self, start_amount):
         self.ledger['BTC'] = start_amount
         self.start = start_amount
         self.hs = hs.HistWorker()
-    def buy_coin(self, c_name, amount, price, fee):
+
+
+    def buy_coin(self, c_name, price):
+        amount = self.start * self.target_amount
         if(amount*price > self.ledger['BTC']):
             return
         else:
-            self.ledger['BTC'] -= (amount * price) + fee
+            self.ledger['BTC'] -= (amount * price) + self.fee
             self.ledger[c_name] += amount
             return
-    def sell_coin(self, price, amount, c_name):
-        self.ledger[c_name] -= amount
-        self.ledger['BTC'] += (amount * price) - ((amount * price)*self.fees['sell'])
+
+
+    def sell_coin(self, price, c_name):
+        if self.ledger[c_name] > 0:
+            amount = self.ledger[c_name]
+            self.ledger['BTC'] += (amount * price) - ((amount * price)*self.fee)
+            return
+        else:
+            return
+
     
     def get_total_btc_value(self, date):
         
@@ -59,9 +64,13 @@ class CryptoFolio:
                 self.ledger[c] = 0
         return self.ledger['BTC']
 
-    def evaluate_output(self, out, ):
-        if (out == 1):
-            self.buy_coin
+    def evaluate_output(self, out, coin, price):
+        if (out == 1.0):
+            self.buy_coin(coin, price)
+        elif(out==.5):
+            return
+        else:
+            self.sell_coin(price,coin)
 
 class CryptoEval:
 
