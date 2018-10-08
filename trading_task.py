@@ -13,7 +13,7 @@ from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 # Local
 from peas.peas.networks.rnn import NeuralNetwork
-from peas.peas.methods import hyperneat
+from peas.peas.methods import hyperneat.HyperNEATDeveloper, hyperneat.Substrate
 
 from peas.peas.methods.neat import NEATPopulation, NEATGenotype
 from peas.peas.methods.evolution import SimplePopulation
@@ -30,45 +30,31 @@ class Trading_Task:
     def __init__(self):
         self.hs = HistWorker()
         self.end_idx = len(self.hs.currentHists["DASH"])
-        self.inputs = len(self.hs.currentHists)*len(self.currentHists["DASH"].keys())
+        self.inputs = self.hs.hist_shaped.shape[0]*self.hist_shaped[0].shape[1]
         self.outputs = self.end_idx * 3 # times by three for buy | sell | hodl(pass)
-        self.port = CryptoFolio(1)
+        #self.port = CryptoFolio(1)
 
     
     def set_portfolio_keys(folio):
         for k in self.hs.currentHists.keys:
             folio.ledger[k] = 0
-    
-    def evaluate(pop, d):
-        p_ordered = []
-        for each p in pop:
-            inserted = False
-            g = p.genotype
-            w = p.weights
-            pf = self.portfolio_list[pop.port_index]
-            p_score = pf.get_total_btc_value(d)
-            for x in range(0, len(p_ordered)):
-                if(p_ordered[x] < p_score):
-                    p_ordered.insert(x, p_score)
-            if(inserted == false):
-                p_ordered.append(p_score)
-        return p_ordered
 
 
     def evaluate(self, network, verbose=False):
+        portfolio = CryptoFolio(1)
         if not isinstance(network, NeuralNetwork):
             network = NeuralNetwork(network)
-        
+        for x in range()
         network.feed()
 
 
     def run(generations=100, popsize=100):
-        geno_args = dict(feedforward=True, 
-                         inputs= len(self.hs.currentHists.keys())*self.currentHists['DASH'].shape[1], #we will have standard ticker data and some special factors for each coin
-                         outputs=3*(len(self.hs.currentHists.keys()),
-                         weight_range=(-3.0, 3.0), 
-                         prob_add_conn=0.1, 
-                         prob_add_node=0.03,
-                         bias_as_node=False,
-                         types=['sin', 'bound', 'linear', 'gauss', 'sigmoid', 'abs'])
-            
+                
+        substrate = Substrate()
+        substrate.add_nodes((self.hs.hist_shape.shape[0],), 'l')
+        substrate.add_connections('l', 'l')
+        geno = lambda: NEATGenotype(feedforward=True, inputs=self.inputs, weight_range=(-3.0, 3.0), 
+                                       prob_add_conn=0.3, prob_add_node=0.03,
+                                       types=['sin', 'ident', 'gauss', 'sigmoid', 'abs'])
+        pop = NEATPopulation(geno, popsize=popsize, target_species=8)
+        developer = HyperNEATDeveloper(substrate=substrate, add_deltas=False, sandwich=False)

@@ -103,4 +103,3 @@ class HistWorker:
         self.combine_frames()
         return
 
-    
