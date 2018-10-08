@@ -25,11 +25,11 @@ class Cryptolution:
 
 class CryptoFolio:
     
-    
+    #assume we 
     fees = {
-        'sell': .01,
-        'buy': .01,
-        'hodl': .01
+        'sell': .002,
+        'buy': .002,
+        'hodl': .002
     }
     
     
@@ -74,25 +74,6 @@ class CryptoEval:
         self.end_amnt = self.port.get_total_btc_value(date)
         perf = self.start_amnt - self.end_amnt
         return perf
-
-
-
-class CryptoIndividual:
-
-    def __init__(self, substrate, genotype, phenotype):
-        self.sub = substrate
-        self.geno = genotype
-        self.pheno = phenotype
-
-class EvoLayer:
-
-    def __init__(self):
-        return
-
-class EvoGene:
-
-    def __init__(self):
-        return
 
 class EvoSim:
     count = 0

@@ -82,12 +82,14 @@ class HistWorker:
         for x in range(0,len(fileNames)):
             df = self.get_data_frame(fileNames[x])
             col_prefix = self.get_file_symbol(fileNames[x])
-            self.coin_dict[col_prefix] = x
+            self.coin_dict[x] = col_prefix
             #df.drop("Unnamed: 0", 1)
             df = self.read_in_moon_data(df)
             df = df.drop("Unnamed: 0", 1)
             df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
-            self.currentHists[x] = np.array(df)
+            self.currentHists[col_prefix] = df
+            self.hist_shaped[x] = np.array(df)
+        self.hist_shaped = pd.Series(self.hist_shaped)
         '''
         main = df_list[0]
         for i in range(1, len(df_list)):
@@ -96,11 +98,9 @@ class HistWorker:
         '''
     def __init__(self):
         self.currentHists = {}
+        self.hist_shaped = {}
         self.coin_dict = {}
         self.combine_frames()
         return
 
     
-hs = HistWorker()
-mon = pd.Series(hs.currentHists)
-print(mon[0][0])

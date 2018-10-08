@@ -25,9 +25,9 @@ class Trading_Task:
     start_idx = 0
     
     task_output_actions = {
-        'BUY': 1,
-        'SELL': 0.0,
-        'HODL': 0.5,
+        1.0 = 'buy',
+        .5 = 'hodl',
+        0 = 'sell'
     }
     
     portfolio_list = []
@@ -66,9 +66,7 @@ class Trading_Task:
             network = NeuralNetwork(network)
         
         network.feed()
-
-    def run
-
+        
 
     def run(generations=100, popsize=100):
         geno_args = dict(feedforward=True, 
