@@ -7,7 +7,6 @@ from poloniex import Poloniex
 from datetime import date, timedelta, datetime 
 import os
 from ephemGravityWrapper import gravity as gbaby
-
 '''
 As can be expected by this point, you will notice that 
 nothing done here has been done in the best possible way
@@ -103,3 +102,6 @@ class HistWorker:
         self.combine_frames()
         return
 
+
+for s in range(0, 5):
+    print(HistWorker().hist_shaped[0][s][0])
