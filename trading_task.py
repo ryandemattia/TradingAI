@@ -88,7 +88,7 @@ class Trading_Task:
                                        types=['sin', 'ident', 'gauss', 'sigmoid', 'abs'])
         pop = NEATPopulation(geno, popsize=popsize, target_species=8)
         developer = HyperNEATDeveloper(substrate=substrate, add_deltas=False, sandwich=False, node_type="sigmoid")
-        results = pop.epoch(generations=generations, evaluator=partial(evaluate, task=self, developer=developer))
+        results = pop.epoch(generations=generations, evaluator=partial(evaluate, task=self, developer=developer), solution=self)
         return results
 
 
