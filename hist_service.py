@@ -85,7 +85,7 @@ class HistWorker:
             #df.drop("Unnamed: 0", 1)
             df = self.read_in_moon_data(df)
             df = df.drop("Unnamed: 0", 1)
-            df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
+            #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             self.currentHists[col_prefix] = df
             self.hist_shaped[x] = np.array(df)
         self.hist_shaped = pd.Series(self.hist_shaped)
@@ -102,6 +102,9 @@ class HistWorker:
         self.combine_frames()
         return
 
+hs = HistWorker()
 
-for s in range(0, 5):
-    print(HistWorker().hist_shaped[0][s][0])
+print(hs.currentHists['DASH']['date'][0])
+print(hs.currentHists['DASH']['date'][14])
+print(hs.hist_shaped[0][0][0])
+print(hs.hist_shaped[0][14][0])

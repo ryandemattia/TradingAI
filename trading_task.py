@@ -30,6 +30,7 @@ class Trading_Task:
     def __init__(self):
         self.hs = HistWorker()
         self.end_idx = len(self.hs.currentHists["DASH"])
+        self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*self.hist_shaped[0].shape[1]
         self.outputs = self.hs.hist_shaped.shape[0] # times by three for buy | sell | hodl(pass)
         #self.port = CryptoFolio(1)
@@ -44,7 +45,7 @@ class Trading_Task:
 
     def get_one_bar_input_2d(self, end_idx):
         active = {}
-        for x in range(self.outputs):
+        for x in range(0, self.outputs):
             active[x] = self.hs.hist_shaped[x][idx]
         return active
 
@@ -64,6 +65,16 @@ class Trading_Task:
             active = self.get_one_bar_input(z)
             results[z] = network.feed(active)
 
+        for i in range(0, 14):
+            out = results[i]
+            for x in range(0, self.outputs):
+                sym = self.hs.coin_dict[x]
+                if(out[x] == 1.0):
+                    portfolio.buy_coin(sym, self.hs.currentHists[sym][x]['close'])
+                elif(out[x] == 0.0):
+                    portfolio.sell_coin(sym)
+        end_ts = self.hs.hist_shaped[0][14][0]
+        result_val = portfolio.get_total_btc_value(int(end_ts))
         print(results)
 
 
