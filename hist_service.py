@@ -101,10 +101,11 @@ class HistWorker:
         self.coin_dict = {}
         self.combine_frames()
         return
-
+'''
 hs = HistWorker()
 
 print(hs.currentHists['DASH']['date'][0])
 print(hs.currentHists['DASH']['date'][14])
 print(hs.hist_shaped[0][0][0])
 print(hs.hist_shaped[0][14][0])
+'''

@@ -12,9 +12,9 @@ import numpy as np
 from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 # Local
-from peas.peas.networks.rnn import NeuralNetwork
-from peas.peas.methods import hyperneat.HyperNEATDeveloper, hyperneat.Substrate
 
+from peas.peas.methods.hyperneat import HyperNEATDeveloper, Substrate
+#import peas.peas.networks.rnn.NeuralNetwork as nn
 from peas.peas.methods.neat import NEATPopulation, NEATGenotype
 from peas.peas.methods.evolution import SimplePopulation
 
@@ -23,7 +23,7 @@ class Trading_Task:
     EPSILON = 1e-100
 
     start_idx = 0
-    
+    highest_returns = 0
     portfolio_list = []
 
 
@@ -39,9 +39,6 @@ class Trading_Task:
     def set_portfolio_keys(folio):
         for k in self.hs.currentHists.keys:
             folio.ledger[k] = 0
-
-    def eval_out(sigmoid_out):
-        if 
 
     def get_one_bar_input_2d(self, end_idx):
         active = {}
@@ -76,7 +73,12 @@ class Trading_Task:
         end_ts = self.hs.hist_shaped[0][14][0]
         result_val = portfolio.get_total_btc_value(int(end_ts))
         print(results)
+        if(results > self.highest_returns):
+            self.highest_returns = results
+        return results
 
+    def solve(self, network):
+        return self.evaluate(network) >= self.highest_returns
 
     def run(generations=100, popsize=100):
                 
