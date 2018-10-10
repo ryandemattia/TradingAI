@@ -18,7 +18,7 @@ from peas.peas.methods.hyperneat import HyperNEATDeveloper, Substrate
 from peas.peas.methods.neat import NEATPopulation, NEATGenotype
 from peas.peas.methods.evolution import SimplePopulation
 
-class Trading_Task:
+class TradingTask:
 
     EPSILON = 1e-100
 
@@ -31,7 +31,7 @@ class Trading_Task:
         self.hs = HistWorker()
         self.end_idx = len(self.hs.currentHists["DASH"])
         self.but_target = .1
-        self.inputs = self.hs.hist_shaped.shape[0]*self.hist_shaped[0].shape[1]
+        self.inputs = self.hs.hist_shaped.shape[0]*self.hs.hist_shaped[0].shape[1]
         self.outputs = self.hs.hist_shaped.shape[0] # times by three for buy | sell | hodl(pass)
         #self.port = CryptoFolio(1)
 
@@ -80,7 +80,7 @@ class Trading_Task:
     def solve(self, network):
         return self.evaluate(network) >= self.highest_returns
 
-    def run(generations=100, popsize=100):
+    def run(self, generations=100, popsize=100):
                 
         substrate = Substrate((self.hs.hist_shaped.shape[0],))
         #substrate.add_nodes(, 'l')
@@ -96,5 +96,5 @@ class Trading_Task:
 
 
 if __name__ == '__main__':
-    do_it = run()
+    do_it = TradingTask().run()
 
