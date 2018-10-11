@@ -12,19 +12,11 @@ import numpy as np
 from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 # Local
-from pureples import neat
-import neat.nn
-import cPickle as pickle
-from pureples.shared.substrate import Substrate
-from pureples.shared.visualize import draw_net
-from pureples.es_hyperneat.es_hyperneat import ESNetwork
-
-'''
 from peas.peas.methods.hyperneat import HyperNEATDeveloper, Substrate
-#import peas.peas.networks.rnn.NeuralNetwork as nn
+from peas.peas.networks.rnn import NueralNetwork
 from peas.peas.methods.neat import NEATPopulation, NEATGenotype
 from peas.peas.methods.evolution import SimplePopulation
-'''
+
 '''
 will come back to this, trying to get something up and running
 tonight so gonna make a quick n dirty purples experiment
@@ -37,43 +29,31 @@ class TradingTask:
     start_idx = 0
     highest_returns = 0
     portfolio_list = []
-    # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 0, 
-            "max_depth": 1, 
-            "variance_threshold": 0.03, 
-            "band_threshold": 0.3, 
-            "iteration_level": 1,
-            "division_threshold": 0.5, 
-            "max_weight": 5.0, 
-            "activation": "sigmoid"}
 
-    # Config for CPPN.
-    config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
-                                neat.species.DefaultSpeciesSet, neat.stagnation.DefaultStagnation,
-                                'config_cppn_xor')
     def __init__(self):
         self.hs = HistWorker()
         self.end_idx = len(self.hs.currentHists["DASH"])
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*self.hs.hist_shaped[0].shape[1]
         self.outputs = self.hs.hist_shaped.shape[0] # times by three for buy | sell | hodl(pass)
-        self.sub = Substrate(self.inputs, self.outputs)
+        #self.sub = Substrate(self.inputs, self.outputs)
         #self.port = CryptoFolio(1)
 
     
-    def set_portfolio_keys(folio):
-        for k in self.hs.currentHists.keys:
+    def set_portfolio_keys(self, folio):
+        for k in self.hs.currentHists.keys():
             folio.ledger[k] = 0
 
     def get_one_bar_input_2d(self, end_idx):
         active = {}
         for x in range(0, self.outputs):
-            active[x] = self.hs.hist_shaped[x][idx]
+            active[x] = self.hs.hist_shaped[x][end_idx]
         return active
 
     def evaluate(self, network, verbose=False):
         portfolio = CryptoFolio(1)
         active = {}
+        result = {}
         if not isinstance(network, NeuralNetwork):
             network = NeuralNetwork(network)
         for z in range(0, 14):
@@ -84,7 +64,7 @@ class TradingTask:
                 old_idx = z * 5
             new_idx = (z + 1) * 5
             '''
-            active = self.get_one_bar_input(z)
+            active = self.get_one_bar_input_2d(z)
             results[z] = network.feed(active)
 
         for i in range(0, 14):
