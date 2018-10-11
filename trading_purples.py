@@ -20,6 +20,9 @@ from pureples.shared.visualize import draw_net
 from pureples.es_hyperneat.es_hyperneat import ESNetwork
 # Local
 class PurpleTrader:
+    
+    #needs to be initialized so as to allow for 62 outputs that return a coordinate
+    output_coordinates = []
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
             "max_depth": 1, 
@@ -35,5 +38,14 @@ class PurpleTrader:
                                 neat.species.DefaultSpeciesSet, neat.stagnation.DefaultStagnation,
                                 'config_cppn_xor')
                                 
-    def __init__(self, inputCords, outputCords):
+    start_idx = 0
+    highest_returns = 0
+    portfolio_list = []
+
+    def __init__(self):
+        self.hs = HistWorker()
+        self.end_idx = len(self.hs.currentHists["DASH"])
+        self.but_target = .1
+        self.inputs = self.hs.hist_shaped.shape[0]*self.hs.hist_shaped[0].shape[1]
+        self.outputs = self.hs.hist_shaped.shape[0] 
         

@@ -13,7 +13,7 @@ from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 # Local
 from peas.peas.methods.hyperneat import HyperNEATDeveloper, Substrate
-from peas.peas.networks.rnn import NueralNetwork
+import peas.peas.networks.rnn
 from peas.peas.methods.neat import NEATPopulation, NEATGenotype
 from peas.peas.methods.evolution import SimplePopulation
 
@@ -87,15 +87,15 @@ class TradingTask:
 
     def run(self, generations=100, popsize=100):
                 
-        substrate = Substrate((self.hs.hist_shaped.shape[0],))
-        #substrate.add_nodes(, 'l')
+        substrate = Substrate()
+        substrate.add_nodes((self.hs.hist_shaped.shape[0],), 'l')
         substrate.add_connections('l', 'l')
         geno = lambda: NEATGenotype(feedforward=True, inputs=self.inputs, weight_range=(-3.0, 3.0), 
                                        prob_add_conn=0.3, prob_add_node=0.03,
                                        types=['sin', 'ident', 'gauss', 'sigmoid', 'abs'])
         pop = NEATPopulation(geno, popsize=popsize, target_species=8)
         developer = HyperNEATDeveloper(substrate=substrate, add_deltas=False, sandwich=False, node_type="sigmoid")
-        results = pop.epoch(generations=generations, evaluator=partial(evaluate, task=self, developer=developer), solution=self)
+        results = pop.epoch(generations=generations, evaluator=partial(self.evaluate, task=self, developer=developer), solution=self)
         return results
 
 
