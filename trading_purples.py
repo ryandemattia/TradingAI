@@ -7,8 +7,6 @@ from itertools import product
 
 # Libs
 import numpy as np
-# Libraries
-import numpy as np
 from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 # Local
