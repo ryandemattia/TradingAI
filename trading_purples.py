@@ -10,9 +10,8 @@ import numpy as np
 from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 # Local
-from pureples import neat
 import neat.nn
-import cPickle as pickle
+import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
 from pureples.es_hyperneat.es_hyperneat import ESNetwork
@@ -20,7 +19,7 @@ from pureples.es_hyperneat.es_hyperneat import ESNetwork
 class PurpleTrader:
     
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
-    output_coordinates = []
+
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
             "max_depth": 1, 
@@ -94,3 +93,7 @@ class PurpleTrader:
     def solve(self, network):
         return self.evaluate(network) >= self.highest_returns
         
+if __name__ == 'main':
+    task = PurpleTrader()
+    print(tast.inputs)
+    

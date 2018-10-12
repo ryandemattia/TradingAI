@@ -118,3 +118,19 @@ class EvoSim:
         for ix in range(0, len(nextGens)):
             print(ix)
             
+
+
+class EvoNode:
+    fitnessScore = 0
+    lastScore = 0
+    numInNodes = 0
+    def __init__(self, parent1, parent2, startAmt, numNodes):
+        buyPower = startAmt
+        numInNodes = inNodes
+        numOutNodes = numOutNodes
+        generation = 0 
+        fitness = 0
+        weights = {}
+
+        def learn(self, data):
+            for i in range(0, len(data)):
