@@ -39,12 +39,18 @@ class PurpleTrader:
     highest_returns = 0
     portfolio_list = []
 
+    in_shapes = []
+    out_shapes = []
     def __init__(self):
         self.hs = HistWorker()
         self.end_idx = len(self.hs.currentHists["DASH"])
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*self.hs.hist_shaped[0].shape[1]
         self.outputs = self.hs.hist_shaped.shape[0]
+        for ix in range(self.outputs):
+            self.out_shapes.append((0, ix))
+            for ix2 in range(len(self.hs.hist_shaped[0][0])):
+                self.in_shapes.append((ix, ix2))
         #self.subStrate = Substrate()
         
         
@@ -98,6 +104,12 @@ class PurpleTrader:
 if __name__ == '__main__':
     task = PurpleTrader()
     print(task.inputs)
+    print(task.outputs)
+    print(task.out_shapes)
+    print(task.in_shapes)
+    print(task.get_one_bar_input_2d(0))
+    '''
     for x in range(len(task.hs.hist_shaped[0])):
         print(task.hs.hist_shaped[1][x][3],task.hs.hist_shaped[0][x][3])
+    '''
     
