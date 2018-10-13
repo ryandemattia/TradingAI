@@ -83,7 +83,7 @@ class HistWorker:
             col_prefix = self.get_file_symbol(fileNames[x])
             self.coin_dict[x] = col_prefix
             #df.drop("Unnamed: 0", 1)
-            df = self.read_in_moon_data(df)
+            #df = self.read_in_moon_data(df)
             df = df.drop("Unnamed: 0", 1)
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             self.currentHists[col_prefix] = df

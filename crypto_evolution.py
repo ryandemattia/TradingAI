@@ -132,5 +132,5 @@ class EvoNode:
         fitness = 0
         weights = {}
 
-        def learn(self, data):
-            for i in range(0, len(data)):
+        #def learn(self, data):
+            #for i in range(0, len(data)):

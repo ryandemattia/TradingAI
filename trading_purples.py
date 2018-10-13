@@ -33,7 +33,7 @@ class PurpleTrader:
     # Config for CPPN.
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
                                 neat.species.DefaultSpeciesSet, neat.stagnation.DefaultStagnation,
-                                'config_cppn_xor')
+                                'config_trader')
                                 
     start_idx = 0
     highest_returns = 0
@@ -45,7 +45,7 @@ class PurpleTrader:
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*self.hs.hist_shaped[0].shape[1]
         self.outputs = self.hs.hist_shaped.shape[0]
-        self.subStrate = Substrate()
+        #self.subStrate = Substrate()
         
         
     def set_portfolio_keys(self, folio):
@@ -74,7 +74,8 @@ class PurpleTrader:
             '''
             active = self.get_one_bar_input_2d(z)
             results[z] = network.feed(active)
-
+        #first loop sets up buy sell hold signal result from the net,
+        #we want to gather all 14 days of 
         for i in range(0, 14):
             out = results[i]
             for x in range(0, self.outputs):
@@ -83,6 +84,7 @@ class PurpleTrader:
                     portfolio.buy_coin(sym, self.hs.currentHists[sym][x]['close'])
                 elif(out[x] == 0.0):
                     portfolio.sell_coin(sym)
+                #skip the hold case because we just dont buy or sell hehe
         end_ts = self.hs.hist_shaped[0][14][0]
         result_val = portfolio.get_total_btc_value(int(end_ts))
         print(results)
@@ -93,7 +95,9 @@ class PurpleTrader:
     def solve(self, network):
         return self.evaluate(network) >= self.highest_returns
         
-if __name__ == 'main':
+if __name__ == '__main__':
     task = PurpleTrader()
-    print(tast.inputs)
+    print(task.inputs)
+    for x in range(len(task.hs.hist_shaped[0])):
+        print(task.hs.hist_shaped[1][x][3],task.hs.hist_shaped[0][x][3])
     
