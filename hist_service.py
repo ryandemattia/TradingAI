@@ -106,6 +106,7 @@ class HistWorker:
         self.hist_shaped = {}
         self.coin_dict = {}
         self.combine_frames()
+        self.hist_full_size = 4380
         return
 '''
 hs = HistWorker()

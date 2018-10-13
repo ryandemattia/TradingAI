@@ -9,6 +9,7 @@ from itertools import product
 import numpy as np
 from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
+from random import randint
 # Local
 import neat.nn
 import _pickle as pickle
@@ -38,6 +39,7 @@ class PurpleTrader:
     start_idx = 0
     highest_returns = 0
     portfolio_list = []
+
 
     in_shapes = []
     out_shapes = []
@@ -74,7 +76,8 @@ class PurpleTrader:
         active = {}
         results = {}
         end_prices = {}
-        for z in range(0, 360):
+        rand_start = randint(0, self.hs.hist_full_size - 84) #get random start point with a week of padding from end
+        for z in range(rand_start, rand_start+84):
             '''
             if(z == 0):
                 old_idx = 1
@@ -86,7 +89,7 @@ class PurpleTrader:
             results[z] = network.activate(active)
         #first loop sets up buy sell hold signal result from the net,
         #we want to gather all 14 days of 
-        for i in range(0, 360):
+        for i in range(rand_start, rand_start + 84):
             out = results[i]
             #print(len(out))
             for x in range(len(out)):
@@ -94,9 +97,9 @@ class PurpleTrader:
                 #print(out[x])
                 if isinstance(out[x], float):
                     try:
-                        if(out[x] > .6):
+                        if(out[x] > .8):
                             portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][i])
-                        elif(out[x] < 0.3):
+                        elif(out[x] < 0.5):
                             portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][i])
                     except:
                         print('error', sym, i)
@@ -130,26 +133,26 @@ def run(task, gens):
     pop.add_reporter(neat.reporting.StdOutReporter(True))
 
     winner = pop.run(task.eval_fitness, gens)
-    print("es_hyperneat_xor_small done")
+    print("es trade god summoned")
     return winner, stats
 
 
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader()
-    winner = run(task, 30)[0]
+    winner = run(task, 15)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
     print('\nOutput:')
     cppn = neat.nn.FeedForwardNetwork.create(winner, task.config)
     network = ESNetwork(task.subStrate, cppn, task.params)
-    winner_net = network.create_phenotype_network(filename='es_hyperneat_xor_small_winner.png')  # This will also draw winner_net.
+    winner_net = network.create_phenotype_network(filename='es_god_trader_winner.png')  # This will also draw winner_net.
 
     # Save CPPN if wished reused and draw it to file.
-    draw_net(cppn, filename="es_hyperneat_xor_small_cppn")
-    with open('es_hyperneat_xor_small_cppn.pkl', 'wb') as output:
-        pickle.dump(cppn, output, pickle.HIGHEST_PROTOCOL)
+    draw_net(cppn, filename="es_trade_god")
+    with open('es_trade_god_cppn.pkl', 'wb') as output:
+        pickle.dump(cppn, output)
 
     '''
     for x in range(len(task.hs.hist_shaped[0])):
