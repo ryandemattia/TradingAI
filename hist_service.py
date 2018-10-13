@@ -79,6 +79,7 @@ class HistWorker:
     def combine_frames(self):
         length = 4380
         fileNames = self.get_hist_files()
+        coin_and_hist_index = 0
         for x in range(0,len(fileNames)):
             df = self.get_data_frame(fileNames[x])
             col_prefix = self.get_file_symbol(fileNames[x])
@@ -87,10 +88,12 @@ class HistWorker:
             df = df.drop("Unnamed: 0", 1)
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             as_array = np.array(df)
+            #print(len(as_array))
             if(len(as_array) == length):
                 self.currentHists[col_prefix] = df
-                self.hist_shaped[x] = as_array
-                self.coin_dict[x] = col_prefix
+                self.hist_shaped[coin_and_hist_index] = as_array
+                self.coin_dict[coin_and_hist_index] = col_prefix
+                coin_and_hist_index += 1
         self.hist_shaped = pd.Series(self.hist_shaped)
         '''
         main = df_list[0]
@@ -104,3 +107,9 @@ class HistWorker:
         self.coin_dict = {}
         self.combine_frames()
         return
+'''
+hs = HistWorker()
+
+for x in range(len(hs.hist_shaped)):
+    print(len(hs.hist_shaped[x]))
+'''

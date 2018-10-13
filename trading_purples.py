@@ -74,7 +74,7 @@ class PurpleTrader:
         active = {}
         results = {}
         end_prices = {}
-        for z in range(0, 60):
+        for z in range(0, 360):
             '''
             if(z == 0):
                 old_idx = 1
@@ -86,9 +86,9 @@ class PurpleTrader:
             results[z] = network.activate(active)
         #first loop sets up buy sell hold signal result from the net,
         #we want to gather all 14 days of 
-        for i in range(0, 60):
+        for i in range(0, 360):
             out = results[i]
-            print(len(out))
+            #print(len(out))
             for x in range(len(out)):
                 sym = self.hs.coin_dict[x]
                 #print(out[x])
@@ -102,7 +102,7 @@ class PurpleTrader:
                         print('error', sym, i)
                 #skip the hold case because we just dont buy or sell hehe
         for y in range(len(out)):
-            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][14][2]
+            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][360][2]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val)
         return result_val
@@ -137,7 +137,7 @@ def run(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader()
-    winner = run(task, 300)[0]
+    winner = run(task, 30)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
