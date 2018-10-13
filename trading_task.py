@@ -51,7 +51,7 @@ class TradingTask:
         return active
 
     def evaluate(self, network, verbose=False):
-        portfolio = CryptoFolio(1)
+        portfolio = CryptoFolio(1, self.hs.coin_dict)
         active = {}
         result = {}
         if not isinstance(network, NeuralNetwork):
