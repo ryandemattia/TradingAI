@@ -89,13 +89,16 @@ class PurpleTrader:
                 sym = self.hs.coin_dict[x]
                 #print(out[x])
                 if isinstance(out[x], float):
-                    if(out[x] == 1.0):
-                        portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][i])
-                    elif(out[x] == 0.0):
-                        portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][i])
+                    try:
+                        if(out[x] > .6):
+                            portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][i])
+                        elif(out[x] < 0.3):
+                            portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][i])
+                    except:
+                        print('error', sym, i)
                 #skip the hold case because we just dont buy or sell hehe
-        end_ts = self.hs.hist_shaped[0][14][0]
-        result_val = portfolio.get_total_btc_value(int(end_ts))
+        end_ts = self.hs.hist_shaped[0][14][1]
+        result_val = portfolio.get_total_btc_value(end_ts)
         print(result_val)
         return result_val
 
