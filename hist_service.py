@@ -77,17 +77,20 @@ class HistWorker:
 
     
     def combine_frames(self):
+        length = 4380
         fileNames = self.get_hist_files()
         for x in range(0,len(fileNames)):
             df = self.get_data_frame(fileNames[x])
             col_prefix = self.get_file_symbol(fileNames[x])
-            self.coin_dict[x] = col_prefix
             #df.drop("Unnamed: 0", 1)
             #df = self.read_in_moon_data(df)
             df = df.drop("Unnamed: 0", 1)
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
-            self.currentHists[col_prefix] = df
-            self.hist_shaped[x] = np.array(df)
+            as_array = np.array(df)
+            if(len(as_array) == length):
+                self.currentHists[col_prefix] = df
+                self.hist_shaped[x] = as_array
+                self.coin_dict[x] = col_prefix
         self.hist_shaped = pd.Series(self.hist_shaped)
         '''
         main = df_list[0]
@@ -101,5 +104,3 @@ class HistWorker:
         self.coin_dict = {}
         self.combine_frames()
         return
-
-

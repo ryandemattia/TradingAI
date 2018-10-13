@@ -61,16 +61,20 @@ class PurpleTrader:
     def get_one_bar_input_2d(self, end_idx):
         active = []
         for x in range(0, self.outputs):
-            sym_data = self.hs.hist_shaped[x][end_idx] 
-            for i in range(len(sym_data)):
-                active.append((x, sym_data[i]))
+            try:
+                sym_data = self.hs.hist_shaped[x][end_idx] 
+                for i in range(len(sym_data)):
+                    active.append((x, sym_data[i]))
+            except:
+                print('error')
         return np.asarray(active)
 
     def evaluate(self, network, verbose=False):
         portfolio = CryptoFolio(1, self.hs.coin_dict)
         active = {}
         results = {}
-        for z in range(0, 14):
+        end_prices = {}
+        for z in range(0, 60):
             '''
             if(z == 0):
                 old_idx = 1
@@ -82,7 +86,7 @@ class PurpleTrader:
             results[z] = network.activate(active)
         #first loop sets up buy sell hold signal result from the net,
         #we want to gather all 14 days of 
-        for i in range(0, 14):
+        for i in range(0, 60):
             out = results[i]
             print(len(out))
             for x in range(len(out)):
@@ -97,8 +101,9 @@ class PurpleTrader:
                     except:
                         print('error', sym, i)
                 #skip the hold case because we just dont buy or sell hehe
-        end_ts = self.hs.hist_shaped[0][14][1]
-        result_val = portfolio.get_total_btc_value(end_ts)
+        for y in range(len(out)):
+            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][14][2]
+        result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val)
         return result_val
 

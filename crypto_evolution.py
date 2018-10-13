@@ -32,7 +32,7 @@ class CryptoFolio:
     start = 0
     def __init__(self, start_amount, coins):
         self.ledger['BTC'] = start_amount
-        for ix in range(len(coins)):
+        for ix in coins:
             self.ledger[coins[ix]] = 0
         self.start = start_amount
         self.hs = hs.HistWorker()
@@ -57,15 +57,14 @@ class CryptoFolio:
             return
 
     
-    def get_total_btc_value(self, date):
+    def get_total_btc_value(self, e_prices):
         
         for c in self.ledger:
             if self.ledger[c] != 0 and c != "BTC":
-                current_price = self.hs.currentHists[c][self.hs.currentHists[c].date == date]
-                current_price = current_price['close']
+                current_price = e_prices[c]
                 val = (self.ledger[c] * current_price)
                 val = val - val*self.fees
-                self.ledger['BTC'] += val
+                self.ledger['BTC'] = self.ledger['BTC']+val
                 self.ledger[c] = 0
         return self.ledger['BTC']
 
