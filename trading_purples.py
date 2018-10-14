@@ -50,7 +50,7 @@ class PurpleTrader:
         self.inputs = self.hs.hist_shaped.shape[0]*self.hs.hist_shaped[0].shape[1]
         self.outputs = self.hs.hist_shaped.shape[0]
         for ix in range(self.outputs):
-            self.out_shapes.append((0, ix))
+            self.out_shapes.append((ix,1))
             for ix2 in range(len(self.hs.hist_shaped[0][0])):
                 self.in_shapes.append((ix, ix2))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
@@ -66,15 +66,13 @@ class PurpleTrader:
             try:
                 sym_data = self.hs.hist_shaped[x][end_idx] 
                 for i in range(len(sym_data)):
-                    active.append((x, sym_data[i]))
+                    active.append(sym_data[i])
             except:
                 print('error')
         return np.asarray(active)
 
     def evaluate(self, network, verbose=False):
         portfolio = CryptoFolio(1, self.hs.coin_dict)
-        active = {}
-        results = {}
         end_prices = {}
         rand_start = randint(0, self.hs.hist_full_size - 89) #get random start point with a week of padding from end
         for z in range(rand_start, rand_start+89):
@@ -86,27 +84,21 @@ class PurpleTrader:
             new_idx = (z + 1) * 5
             '''
             active = self.get_one_bar_input_2d(z)
-            results[z] = network.activate(active)
-        #first loop sets up buy sell hold signal result from the net,
-        #we want to gather all 14 days of 
-        for i in range(rand_start, rand_start + 89):
-            out = results[i]
+            out = network.activate(active.tolist())
             #print(len(out))
+            print(out)
             for x in range(len(out)):
                 sym = self.hs.coin_dict[x]
-                #print(out[x])
-                if isinstance(out[x], float):
-                    try:
-                        if(out[x] > .8):
-                            print(out[x])
-                            portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][i])
-                        elif(0.0 < out[x] < 0.5):
-                            portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][i])
-                    except:
-                        print('error', sym, i)
+                try:
+                    if(out[x] > .8):
+                        portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
+                    elif(out[x] < -0.2):
+                        portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
+                except:
+                    print('error', sym)
                 #skip the hold case because we just dont buy or sell hehe
         for y in range(len(out)):
-            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][360][2]
+            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][89][2]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val)
         return result_val

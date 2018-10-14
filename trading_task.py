@@ -53,7 +53,7 @@ class TradingTask:
     def evaluate(self, network, verbose=False):
         portfolio = CryptoFolio(1, self.hs.coin_dict)
         active = {}
-        result = {}
+        results = {}
         if not isinstance(network, NeuralNetwork):
             network = NeuralNetwork(network)
         for z in range(0, 14):
@@ -74,7 +74,7 @@ class TradingTask:
                 if(out[x] == 1.0):
                     portfolio.buy_coin(sym, self.hs.currentHists[sym][x]['close'])
                 elif(out[x] == 0.0):
-                    portfolio.sell_coin(sym)
+                    portfolio.sell_coin(sym, self.hs.currentHists[sym][x]['close'])
         end_ts = self.hs.hist_shaped[0][14][0]
         result_val = portfolio.get_total_btc_value(int(end_ts))
         print(results)
