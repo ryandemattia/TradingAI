@@ -108,9 +108,10 @@ class HistWorker:
         self.combine_frames()
         self.hist_full_size = 4380
         return
-'''
-hs = HistWorker()
 
-for x in range(len(hs.hist_shaped)):
-    print(len(hs.hist_shaped[x]))
-'''
+'''hs = HistWorker()
+
+print(len(hs.hist_shaped))
+print(len(hs.coin_dict))
+print(len(hs.hist_shaped[0][0]))'''
+
