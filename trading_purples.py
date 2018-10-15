@@ -29,7 +29,7 @@ class PurpleTrader:
             "iteration_level": 1,
             "division_threshold": 0.5, 
             "max_weight": 5.0, 
-            "activation": "sigmoid"}
+            "activation": "tanh"}
 
     # Config for CPPN.
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
@@ -47,14 +47,14 @@ class PurpleTrader:
         self.hs = HistWorker()
         self.end_idx = len(self.hs.currentHists["DASH"])
         self.but_target = .1
-        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1] - 1)
+        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1)
         self.outputs = self.hs.hist_shaped.shape[0]
         for ix in range(self.outputs):
             self.out_shapes.append((ix,1))
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
                 self.in_shapes.append((ix, ix2))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        
+        self.epoch_len = 24
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -73,12 +73,12 @@ class PurpleTrader:
         #print(active)
         return active
 
-    def evaluate(self, network, es, rand_start, verbose=False):
+    def evaluate(self, network, es, rand_start, epoch_len, verbose=False):
         portfolio = CryptoFolio(1, self.hs.coin_dict)
         end_prices = {}
         buys = 0
         sells = 0 
-        for z in range(rand_start, rand_start+89):
+        for z in range(rand_start, rand_start+epoch_len):
             '''
             if(z == 0):
                 old_idx = 1
@@ -95,17 +95,17 @@ class PurpleTrader:
                 sym = self.hs.coin_dict[x]
                 #print(out[x])
                 try:
-                    if(out[x] > .7):
+                    if(out[x] > .5):
                         #print("buying")
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
-                    elif(out[x] < 0.3):
+                    elif(out[x] < -.5):
                         #print("selling")
                         portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
                 except:
                     print('error', sym)
                 #skip the hold case because we just dont buy or sell hehe
         for y in range(len(out)):
-            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][89][2]
+            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][epoch_len][2]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val, "buys: ", portfolio.buys, "sells: ", portfolio.sells)
         return result_val
@@ -115,13 +115,13 @@ class PurpleTrader:
         
 
     def eval_fitness(self, genomes, config):
-        r_start = randint(0, self.hs.hist_full_size - 89)    
+        r_start = randint(0, self.hs.hist_full_size - self.epoch_len)    
         for idx, g in genomes:
 
             cppn = neat.nn.FeedForwardNetwork.create(g, config)
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network()
-            g.fitness = self.evaluate(net, network, r_start)
+            g.fitness = self.evaluate(net, network, r_start, self.epoch_len)
         
 
 
