@@ -29,7 +29,7 @@ class PurpleTrader:
             "iteration_level": 1,
             "division_threshold": 0.5, 
             "max_weight": 5.0, 
-            "activation": "sigmoid"}
+            "activation": "tanh"}
 
     # Config for CPPN.
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
@@ -47,11 +47,11 @@ class PurpleTrader:
         self.hs = HistWorker()
         self.end_idx = len(self.hs.currentHists["DASH"])
         self.but_target = .1
-        self.inputs = self.hs.hist_shaped.shape[0]*self.hs.hist_shaped[0].shape[1]
+        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1] - 1)
         self.outputs = self.hs.hist_shaped.shape[0]
         for ix in range(self.outputs):
             self.out_shapes.append((ix,1))
-            for ix2 in range(len(self.hs.hist_shaped[0][0])):
+            for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
                 self.in_shapes.append((ix, ix2))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         
@@ -66,12 +66,13 @@ class PurpleTrader:
             try:
                 sym_data = self.hs.hist_shaped[x][end_idx] 
                 for i in range(len(sym_data)):
-                    active.append(sym_data[i])
+                    if (i != 1):
+                        active.append(sym_data[i].tolist())
             except:
                 print('error')
-        return np.asarray(active)
+        return active
 
-    def evaluate(self, network, verbose=False):
+    def evaluate(self, network, es, verbose=False):
         portfolio = CryptoFolio(1, self.hs.coin_dict)
         end_prices = {}
         rand_start = randint(0, self.hs.hist_full_size - 89) #get random start point with a week of padding from end
@@ -84,15 +85,19 @@ class PurpleTrader:
             new_idx = (z + 1) * 5
             '''
             active = self.get_one_bar_input_2d(z)
-            out = network.activate(active.tolist())
+            network.reset()
+            for n in range(es.activations):
+                out = network.activate(active)
             #print(len(out))
-            print(out)
             for x in range(len(out)):
                 sym = self.hs.coin_dict[x]
+                #print(out[x])
                 try:
-                    if(out[x] > .8):
+                    if(out[x] > .5):
+                        #print("buying")
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
-                    elif(out[x] < -0.2):
+                    elif(out[x] < -0.5):
+                        #print("selling")
                         portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
                 except:
                     print('error', sym)
@@ -114,12 +119,12 @@ class PurpleTrader:
             cppn = neat.nn.FeedForwardNetwork.create(g, config)
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network()
-            g.fitness = self.evaluate(net)
+            g.fitness = self.evaluate(net, network)
         
 
 
 # Create the population and run the XOR task by providing the above fitness function.
-def run(task, gens):
+def run_pop(task, gens):
     pop = neat.population.Population(task.config)
     stats = neat.statistics.StatisticsReporter()
     pop.add_reporter(stats)
@@ -133,7 +138,7 @@ def run(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader()
-    winner = run(task, 34)[0]
+    winner = run_pop(task, 34)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
@@ -143,7 +148,7 @@ if __name__ == '__main__':
     winner_net = network.create_phenotype_network(filename='es_god_trader_winner.png')  # This will also draw winner_net.
 
     # Save CPPN if wished reused and draw it to file.
-    draw_net(cppn, filename="es_trade_god")
+    #draw_net(cppn, filename="es_trade_god")
     with open('es_trade_god_cppn.pkl', 'wb') as output:
         pickle.dump(cppn, output)
 

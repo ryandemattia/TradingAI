@@ -45,7 +45,7 @@ class CryptoFolio:
         else:
             coin_amount = amount/price
             the_fee = self.fees * amount
-            self.ledger['BTC'] -= (amount + self.fees)
+            self.ledger['BTC'] -= (amount + the_fee)
             self.ledger[c_name] += coin_amount
             return
 
