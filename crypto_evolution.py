@@ -4,25 +4,6 @@ import pandas as pd
 import numpy as np
 
 
-
-class Cryptolution:
-
-    def __init__(self, generations): #pass number of generations
-        self.histworker = hs.HistWorker()
-        self.num_gens = generations
-    
-    def one_gen(self):
-        for x in range(len(self.histworker.currentHists[0])):
-            for symbol in self.histworker.currentHists.keys():
-                dataIn = self.histworker.currentHists[symbol]
-                substrate_in = len(dataIn.columns.values)
-
-
-    def data_loop(self):
-        for i in self.num_gens:
-            return i
-
-
 class CryptoFolio:
     
     #assume we 
@@ -80,17 +61,6 @@ class CryptoFolio:
         else:
             self.sell_coin(price,coin)
 
-class CryptoEval:
-
-    def __init__(self, start_btc, population):
-        self.port = CryptoFolio(start_btc)
-        self.start_amnt = start_btc
-        self.pop = population
-
-    def evaluate(self, date):
-        self.end_amnt = self.port.get_total_btc_value(date)
-        perf = self.start_amnt - self.end_amnt
-        return perf
 
 class EvoSim:
     count = 0
@@ -126,19 +96,3 @@ class EvoSim:
         for ix in range(0, len(nextGens)):
             print(ix)
             
-
-
-class EvoNode:
-    fitnessScore = 0
-    lastScore = 0
-    numInNodes = 0
-    def __init__(self, parent1, parent2, startAmt, numNodes):
-        buyPower = startAmt
-        numInNodes = inNodes
-        numOutNodes = numOutNodes
-        generation = 0 
-        fitness = 0
-        weights = {}
-
-        #def learn(self, data):
-            #for i in range(0, len(data)):
