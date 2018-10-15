@@ -27,6 +27,8 @@ class CryptoFolio:
     
     #assume we 
     fees = .002
+    buys = 0
+    sells = 0
     target_amount = 0.1
     ledger = {}
     start = 0
@@ -47,6 +49,7 @@ class CryptoFolio:
             the_fee = self.fees * amount
             self.ledger['BTC'] -= (amount + the_fee)
             self.ledger[c_name] += coin_amount
+            self.buys += 1
             return
 
 
@@ -55,6 +58,7 @@ class CryptoFolio:
             amount = self.ledger[c_name]
             self.ledger['BTC'] += ((amount*price) - ((amount * price)*self.fees))
             self.ledger[c_name] = 0
+            self.sells += 1
             return
         else:
             return

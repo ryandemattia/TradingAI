@@ -29,7 +29,7 @@ class PurpleTrader:
             "iteration_level": 1,
             "division_threshold": 0.5, 
             "max_weight": 5.0, 
-            "activation": "tanh"}
+            "activation": "sigmoid"}
 
     # Config for CPPN.
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
@@ -70,12 +70,14 @@ class PurpleTrader:
                         active.append(sym_data[i].tolist())
             except:
                 print('error')
+        #print(active)
         return active
 
-    def evaluate(self, network, es, verbose=False):
+    def evaluate(self, network, es, rand_start, verbose=False):
         portfolio = CryptoFolio(1, self.hs.coin_dict)
         end_prices = {}
-        rand_start = randint(0, self.hs.hist_full_size - 89) #get random start point with a week of padding from end
+        buys = 0
+        sells = 0 
         for z in range(rand_start, rand_start+89):
             '''
             if(z == 0):
@@ -93,10 +95,10 @@ class PurpleTrader:
                 sym = self.hs.coin_dict[x]
                 #print(out[x])
                 try:
-                    if(out[x] > .5):
+                    if(out[x] > .7):
                         #print("buying")
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
-                    elif(out[x] < -0.5):
+                    elif(out[x] < 0.3):
                         #print("selling")
                         portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
                 except:
@@ -105,7 +107,7 @@ class PurpleTrader:
         for y in range(len(out)):
             end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][89][2]
         result_val = portfolio.get_total_btc_value(end_prices)
-        print(result_val)
+        print(result_val, "buys: ", portfolio.buys, "sells: ", portfolio.sells)
         return result_val
 
     def solve(self, network):
@@ -113,13 +115,13 @@ class PurpleTrader:
         
 
     def eval_fitness(self, genomes, config):
-    
+        r_start = randint(0, self.hs.hist_full_size - 89)    
         for idx, g in genomes:
 
             cppn = neat.nn.FeedForwardNetwork.create(g, config)
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network()
-            g.fitness = self.evaluate(net, network)
+            g.fitness = self.evaluate(net, network, r_start)
         
 
 

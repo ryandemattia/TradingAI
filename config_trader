@@ -10,7 +10,7 @@ reset_on_extinction   = False
 # node activation options
 activation_default      = tanh
 activation_mutate_rate  = 0.5
-activation_options      = gauss sin tanh
+activation_options      = gauss sin tanh cube
 
 # node aggregation options
 aggregation_default     = sum
@@ -74,9 +74,9 @@ compatibility_threshold = 3.0
 [DefaultStagnation]
 species_fitness_func = max
 max_stagnation       = 8
-species_elitism      = 13
+species_elitism      = 5
 
 [DefaultReproduction]
-elitism            = 21
+elitism            = 3
 survival_threshold = .5
 
