@@ -93,7 +93,7 @@ class PurpleTrader:
             #print(len(out))
             for x in range(len(out)):
                 sym = self.hs.coin_dict[x]
-                #print(out[x])
+                print(out[x])
                 try:
                     if(out[x] > .7):
                         #print("buying")
