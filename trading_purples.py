@@ -23,18 +23,12 @@ class PurpleTrader:
 
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
-<<<<<<< HEAD
-            "max_depth": 4,
-            "varience_threshold": .03,
-            "band_threshold": 0.3, 
-=======
-            "max_depth": 2, 
+            "max_depth": 3, 
             "variance_threshold": 0.03, 
             "band_threshold": 0.2, 
->>>>>>> ac207463da46b3b72c44e304c5c0f2bd6bc659d6
             "iteration_level": 1,
             "division_threshold": 0.4, 
-            "max_weight": 5.0, 
+            "max_weight": 3.0, 
             "activation": "tanh"}
 
     # Config for CPPN.
@@ -58,9 +52,9 @@ class PurpleTrader:
         sign = 1
         for ix in range(self.outputs):
             sign = sign *-1
-            self.out_shapes.append((ix*sign, ix*.1))
+            self.out_shapes.append((ix, -1))
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
-                self.in_shapes.append((ix*sign, -ix*.1))
+                self.in_shapes.append((ix, ix2))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 48
         
