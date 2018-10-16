@@ -23,11 +23,17 @@ class PurpleTrader:
 
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
+<<<<<<< HEAD
             "max_depth": 4,
             "varience_threshold": .03,
             "band_threshold": 0.3, 
+=======
+            "max_depth": 2, 
+            "variance_threshold": 0.03, 
+            "band_threshold": 0.2, 
+>>>>>>> ac207463da46b3b72c44e304c5c0f2bd6bc659d6
             "iteration_level": 1,
-            "division_threshold": 0.3, 
+            "division_threshold": 0.4, 
             "max_weight": 5.0, 
             "activation": "tanh"}
 
@@ -49,12 +55,14 @@ class PurpleTrader:
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1)
         self.outputs = self.hs.hist_shaped.shape[0]
+        sign = 1
         for ix in range(self.outputs):
-            self.out_shapes.append((ix,1))
+            sign = sign *-1
+            self.out_shapes.append((ix*sign, ix*.1))
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
-                self.in_shapes.append((ix, ix2))
+                self.in_shapes.append((ix*sign, -ix*.1))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 12
+        self.epoch_len = 48
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -107,8 +115,8 @@ class PurpleTrader:
         for y in range(len(out)):
             end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][self.epoch_len][2]
         result_val = portfolio.get_total_btc_value(end_prices)
-        print(result_val, "buys: ", portfolio.buys, "sells: ", portfolio.sells)
-        return result_val
+        print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
+        return result_val[0]
 
     def solve(self, network):
         return self.evaluate(network) >= self.highest_returns
@@ -140,7 +148,7 @@ def run_pop(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader()
-    winner = run_pop(task, 5)[0]
+    winner = run_pop(task, 3)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
