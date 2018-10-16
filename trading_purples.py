@@ -23,7 +23,7 @@ class PurpleTrader:
 
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
-            "max_depth": 5, 
+            "max_depth": 2, 
             "variance_threshold": 0.03, 
             "band_threshold": 0.2, 
             "iteration_level": 1,
@@ -49,10 +49,12 @@ class PurpleTrader:
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1)
         self.outputs = self.hs.hist_shaped.shape[0]
+        sign = 1
         for ix in range(self.outputs):
-            self.out_shapes.append((ix, 1))
+            sign = sign *-1
+            self.out_shapes.append((ix*sign, ix*.1))
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
-                self.in_shapes.append((ix, ix2))
+                self.in_shapes.append((ix*sign, -ix*.1))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 48
         
