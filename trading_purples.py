@@ -24,7 +24,11 @@ class PurpleTrader:
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
             "max_depth": 4, 
+<<<<<<< HEAD
             "variance_threshold": 0.03, 
+=======
+            "variance_threshold": 0.05, 
+>>>>>>> cfdecc4b953f7f655b4b43679395950d26ee5ab6
             "band_threshold": 0.3, 
             "iteration_level": 1,
             "division_threshold": 0.3, 
@@ -54,7 +58,7 @@ class PurpleTrader:
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
                 self.in_shapes.append((ix, ix2))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 24
+        self.epoch_len = 12
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -73,12 +77,12 @@ class PurpleTrader:
         #print(active)
         return active
 
-    def evaluate(self, network, es, rand_start, epoch_len, verbose=False):
+    def evaluate(self, network, es, rand_start, verbose=False):
         portfolio = CryptoFolio(1, self.hs.coin_dict)
         end_prices = {}
         buys = 0
         sells = 0 
-        for z in range(rand_start, rand_start+epoch_len):
+        for z in range(rand_start, rand_start+self.epoch_len):
             '''
             if(z == 0):
                 old_idx = 1
@@ -105,7 +109,7 @@ class PurpleTrader:
                     print('error', sym)
                 #skip the hold case because we just dont buy or sell hehe
         for y in range(len(out)):
-            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][epoch_len][2]
+            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][self.epoch_len][2]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val, "buys: ", portfolio.buys, "sells: ", portfolio.sells)
         return result_val
@@ -121,7 +125,7 @@ class PurpleTrader:
             cppn = neat.nn.FeedForwardNetwork.create(g, config)
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network()
-            g.fitness = self.evaluate(net, network, r_start, self.epoch_len)
+            g.fitness = self.evaluate(net, network, r_start)
         
 
 
