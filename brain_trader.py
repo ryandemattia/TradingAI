@@ -7,96 +7,133 @@ Created on Sun Aug 13 08:07:30 2017
 import pickle
 import time
 import pandas as pd
-import urllib2
 import numpy as np
 from poloniex import Poloniex
 from datetime import date, timedelta, datetime 
-
-polo = Poloniex('key', 'secret')
+from hist_service import HistWorker
+from crypto_evolution import CryptoFolio
+from random import randint, shuffle
+import requests
+# Local
+import neat.nn
+import _pickle as pickle
+from pureples.shared.substrate import Substrate
+from pureples.shared.visualize import draw_net
+from pureples.es_hyperneat.es_hyperneat import ESNetwork
+#polo = Poloniex('key', 'secret')
 
 
 class PaperTrader:
-    
-    def __init__(self, stop_ts, ticker_len, start_amount):
+    params = {"initial_depth": 0, 
+            "max_depth": 4, 
+            "variance_threshold": 0.03, 
+            "band_threshold": 0.3, 
+            "iteration_level": 1,
+            "division_threshold": 0.3, 
+            "max_weight": 5.0, 
+            "activation": "tanh"}
+
+
+    # Config for CPPN.
+    config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
+                                neat.species.DefaultSpeciesSet, neat.stagnation.DefaultStagnation,
+                                'config_trader')
+    in_shapes = []
+    out_shapes = []
+    def __init__(self, ticker_len, start_amount):
+        self.polo = Poloniex()
+        self.currentHists = {}
+        self.hist_shaped = {}
+        self.coin_dict = {}
         self.ticker_len = ticker_len
+        self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*4))
         self.start_amount = start_amount
+        file = open("es_trade_god_cppn_better_substrate.pkl",'rb')
+        self.cppn = pickle.load(file)
+        file.close()
+        self.pull_polo()
+        self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1]-1)
+        self.outputs = self.hist_shaped.shape[0]
+        self.folio = CryptoFolio(start_amount, self.coin_dict)
+        sign = 1
+        for ix in range(self.outputs):
+            sign = sign *-1
+            self.out_shapes.append((sign*ix, 1))
+            for ix2 in range(len(self.hist_shaped[0][0])-1):
+                self.in_shapes.append((sign*ix, (1+ix2)*.1))
+        self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         
-    
-
-    def runit(self, tickerLength, epochs):
-        coins = polo.returnTicker()
-        self.stop = datetime.now()+timedelta(seconds=(self.ticker_len*epochs))
-        tickerStr = str(tickerLength)
-        # uncomment the next lines to creat pickles for the ml models, then (in getscore_getnext comment out the clf definition and training, and uncomment the pickle loading 
-        '''
-        for coin in coins:
+    def pull_polo(self):
+        self.coins = self.polo.returnTicker()
+        tickLen = '7200'
+        start = datetime.today() - timedelta(1) 
+        start = str(int(start.timestamp()))
+        ix = 0
+        for coin in self.coins:
             if coin[:3] == 'BTC':
-                hist = urllib2.urlopen('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start=1405699200&end=9999999999&period='+tickerStr)
-                frame = pd.read_json(hist)
-                makeModels(frame, forcast, coin)
-                '''
-        poloTrader(stop, tickerLength, forcast, coins)
-
-                
-    def closeOrders(self):
-        orders = polo.returnOpenOrders()
-        for o in orders:
-            if orders[o] != []:
+                hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
                 try:
-                    ordnum = orders[o][0]['orderNumber']
-                    polo.cancelOrder(ordnum)
+                    df = pd.DataFrame(hist.json())
+                    #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
+                    as_array = np.array(df)
+                    #print(len(as_array))
+                    self.currentHists[coin] = df
+                    self.hist_shaped[ix] = as_array
+                    self.coin_dict[ix] = coin
+                    ix += 1
                 except:
-                    print 'error closing'
-                    
-                    
-    def sellCoins(self, currency):
-        balances = polo.returnBalances()
-        for b in balances:
-            bal = balances[b]*.99
-            pair = 'BTC_'+b
-            if (bal != 0.0) and (currency[b]['delisted'] != 1 and currency[b]['disabled'] != 1):
-                if pair in coinlist:
-                    try:
-                        tick = polo.returnTicker()
-                        rt = tick[pair]['highestBid']*0.999
-                        print 'selling: %s' %(pair)
-                        polo.sell(pair, rt, bal, postOnly=0)
-                    except:
-                        print 'error while selling: %s' %(pair)
-                    
-    
-    def poloTrader(self, end, intervalLength, lookoutVal, coins):
-        closeOrders()
-        curr = polo.returnCurrencies()
-        #sellList = []
-        self.sellCoins(coins, curr)
-        currentBal = polo.returnBalances()
-        #time.sleep(180)
-        closeOrders()
-        for i in range(0,len(sort)):
-            tick = polo.returnTicker()
-            c = sort[i]
-            print c
-            if predict[c]['accuracy'] > .95 and predict[c]['returns'] > 0.0:
-                try:   
-                    rt = tick[c]['lowestAsk']*1.0015
-                    print 'buying: %s, returns: %f' %(c, predict[c]['returns'])
-                    polo.buy(c, rt, (amt/rt), postOnly=0)
-                except:
-                    print 'error'
-        if datetime.now() >= end:
+                    print("error reading json")
+        self.hist_shaped = pd.Series(self.hist_shaped)
+        self.end_idx = len(self.hist_shaped[0])
+
+    def get_one_bar_input_2d(self):
+        active = []
+        for x in range(0, self.outputs):
+            try:
+                sym_data = self.hist_shaped[x][self.end_idx] 
+                for i in range(len(sym_data)):
+                    if (i != 1):
+                        active.append(sym_data[i].tolist())
+            except:
+                print('error')
+        #print(active)
+        return active
+        
+    def poloTrader(self):
+        end_prices = {}
+        network = ESNetwork(self.subStrate, self.cppn, self.params)
+        net = network.create_phenotype_network()
+        active = self.get_one_bar_input_2d()
+        net.reset()
+        for n in range(network.activations):
+            out = net.activate(active)
+        #print(len(out))
+        rng = len(out)
+        #rng = iter(shuffle(rng))
+        for x in np.random.permutation(rng):
+            sym = self.coin_dict[x]
+            #print(out[x])
+            try:
+                if(out[x] > .5):
+                    print("buying: ", sym)
+                    self.folio.buy_coin(sym, self.currentHists[sym]['close'][self.end_idx])
+                elif(out[x] < -.5):
+                    print("selling: ", sym)
+                    self.folio.sell_coin(sym, self.currentHists[sym]['close'][self.end_idx])
+            except:
+                print('error', sym)
+            #skip the hold case because we just dont buy or sell hehe
+            end_prices[sym] = self.hist_shaped[x][self.end_idx][2]
+        
+        if datetime.now() >= self.end_ts:
+            print(self.folio.get_total_btc_value(end_prices))
             return
         else:
-            print 'buys complete'
-            time.sleep(intervalLength)
-            newBal = polo.returnBalances()
-            for n in newBal:
-                if newBal[n] > 0.0:
-                    print n, newBal[n]
-        poloTrader(end, intervalLength, lookoutVal, coins)
+            print(self.folio)
+            time.sleep(self.ticker_len)
+        self.pull_polo()
+        self.poloTrader()
                         
 
-
-bt = PaperTrader()
-bt.runit(7200, 4)
-
+pt = PaperTrader(7200, .5)
+pt.poloTrader()
