@@ -9,7 +9,7 @@ from itertools import product
 import numpy as np
 from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
-from random import randint
+from random import randint, shuffle
 # Local
 import neat.nn
 import _pickle as pickle
@@ -23,12 +23,21 @@ class PurpleTrader:
 
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
+<<<<<<< HEAD
             "max_depth": 3, 
+=======
+            "max_depth": 4, 
+>>>>>>> b5bfa38f4f5e82de34871c52cb5005944153ef37
             "variance_threshold": 0.03, 
-            "band_threshold": 0.2, 
+            "band_threshold": 0.3, 
             "iteration_level": 1,
+<<<<<<< HEAD
             "division_threshold": 0.4, 
             "max_weight": 3.0, 
+=======
+            "division_threshold": 0.3, 
+            "max_weight": 5.0, 
+>>>>>>> b5bfa38f4f5e82de34871c52cb5005944153ef37
             "activation": "tanh"}
 
     # Config for CPPN.
@@ -52,11 +61,17 @@ class PurpleTrader:
         sign = 1
         for ix in range(self.outputs):
             sign = sign *-1
+<<<<<<< HEAD
             self.out_shapes.append((ix, 0))
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
                 self.in_shapes.append((ix, ix2+1))
+=======
+            self.out_shapes.append((ix, len(self.hs.hist_shaped[0][0])/2))
+            for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
+                self.in_shapes.append((ix,ix2))
+>>>>>>> b5bfa38f4f5e82de34871c52cb5005944153ef37
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 48
+        self.epoch_len = 55
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -76,7 +91,7 @@ class PurpleTrader:
         return active
 
     def evaluate(self, network, es, rand_start, verbose=False):
-        portfolio = CryptoFolio(1, self.hs.coin_dict)
+        portfolio = CryptoFolio(.5, self.hs.coin_dict)
         end_prices = {}
         buys = 0
         sells = 0 
@@ -93,7 +108,9 @@ class PurpleTrader:
             for n in range(es.activations):
                 out = network.activate(active)
             #print(len(out))
-            for x in range(len(out)):
+            rng = len(out)
+            #rng = iter(shuffle(rng))
+            for x in np.random.permutation(rng):
                 sym = self.hs.coin_dict[x]
                 #print(out[x])
                 try:
@@ -106,8 +123,7 @@ class PurpleTrader:
                 except:
                     print('error', sym)
                 #skip the hold case because we just dont buy or sell hehe
-        for y in range(len(out)):
-            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][self.epoch_len][2]
+                end_prices[sym] = self.hs.hist_shaped[x][self.epoch_len][2]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
         return result_val[0]
@@ -142,7 +158,7 @@ def run_pop(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader()
-    winner = run_pop(task, 3)[0]
+    winner = run_pop(task, 21)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
