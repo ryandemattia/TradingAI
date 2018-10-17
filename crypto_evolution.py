@@ -26,7 +26,7 @@ class CryptoFolio:
         if(amount > self.ledger['BTC']):
             return
         else:
-            coin_amount = amount/price
+            coin_amount = amount/(price* 0.01)
             the_fee = self.fees * amount
             self.ledger['BTC'] -= (amount + the_fee)
             self.ledger[c_name] += coin_amount
@@ -35,6 +35,7 @@ class CryptoFolio:
 
 
     def sell_coin(self, c_name, price):
+        price = price * .01
         if self.ledger[c_name] != 0:
             amount = self.ledger[c_name]
             self.ledger['BTC'] += ((amount*price) - ((amount * price)*self.fees))

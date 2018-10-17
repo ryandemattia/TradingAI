@@ -23,22 +23,14 @@ class PurpleTrader:
 
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
-<<<<<<< HEAD
-            "max_depth": 3, 
-=======
             "max_depth": 4, 
->>>>>>> b5bfa38f4f5e82de34871c52cb5005944153ef37
             "variance_threshold": 0.03, 
             "band_threshold": 0.3, 
             "iteration_level": 1,
-<<<<<<< HEAD
-            "division_threshold": 0.4, 
-            "max_weight": 3.0, 
-=======
             "division_threshold": 0.3, 
             "max_weight": 5.0, 
->>>>>>> b5bfa38f4f5e82de34871c52cb5005944153ef37
             "activation": "tanh"}
+
 
     # Config for CPPN.
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
@@ -61,15 +53,9 @@ class PurpleTrader:
         sign = 1
         for ix in range(self.outputs):
             sign = sign *-1
-<<<<<<< HEAD
-            self.out_shapes.append((ix, 0))
+            self.out_shapes.append((sign*ix, 1))
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
-                self.in_shapes.append((ix, ix2+1))
-=======
-            self.out_shapes.append((ix, len(self.hs.hist_shaped[0][0])/2))
-            for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
-                self.in_shapes.append((ix,ix2))
->>>>>>> b5bfa38f4f5e82de34871c52cb5005944153ef37
+                self.in_shapes.append((sign*ix, (1+ix2)*.1))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 55
         
@@ -158,7 +144,7 @@ def run_pop(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader()
-    winner = run_pop(task, 21)[0]
+    winner = run_pop(task, 16)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
@@ -168,7 +154,7 @@ if __name__ == '__main__':
     winner_net = network.create_phenotype_network(filename='es_god_trader_winner.png')  # This will also draw winner_net.
 
     # Save CPPN if wished reused and draw it to file.
-    #draw_net(cppn, filename="es_trade_god")
+    draw_net(cppn, filename="es_trade_god")
     with open('es_trade_god_cppn.pkl', 'wb') as output:
         pickle.dump(cppn, output)
 
