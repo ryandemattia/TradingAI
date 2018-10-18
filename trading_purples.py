@@ -23,7 +23,7 @@ class PurpleTrader:
 
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
-            "max_depth": 2, 
+            "max_depth": 1, 
             "variance_threshold": 0.03, 
             "band_threshold": 0.2, 
             "iteration_level": 1,
@@ -52,9 +52,10 @@ class PurpleTrader:
         sign = 1
         for ix in range(self.outputs):
             sign = sign *-1
-            self.out_shapes.append((ix*sign, ix*.1))
+            self.out_shapes.append((ix*sign, sign*-1))
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
-                self.in_shapes.append((ix*sign, -ix*.1))
+                sign = sign*1
+                self.in_shapes.append((ix*sign, sign*ix2*.1*-1))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 48
         
@@ -142,7 +143,7 @@ def run_pop(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader()
-    winner = run_pop(task, 3)[0]
+    winner = run_pop(task, 2)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
