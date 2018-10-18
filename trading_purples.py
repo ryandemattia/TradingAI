@@ -57,7 +57,7 @@ class PurpleTrader:
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
                 self.in_shapes.append((sign*ix, (1+ix2)*.1))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 55
+        self.epoch_len = 24
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -77,7 +77,7 @@ class PurpleTrader:
         return active
 
     def evaluate(self, network, es, rand_start, verbose=False):
-        portfolio = CryptoFolio(.5, self.hs.coin_dict)
+        portfolio = CryptoFolio(.05, self.hs.coin_dict)
         end_prices = {}
         buys = 0
         sells = 0 
@@ -144,7 +144,7 @@ def run_pop(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader()
-    winner = run_pop(task, 16)[0]
+    winner = run_pop(task, 6)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
@@ -154,7 +154,7 @@ if __name__ == '__main__':
     winner_net = network.create_phenotype_network(filename='es_god_trader_winner.png')  # This will also draw winner_net.
 
     # Save CPPN if wished reused and draw it to file.
-    draw_net(cppn, filename="es_trade_god")
+    #draw_net(cppn, filename="es_trade_god")
     with open('es_trade_god_cppn.pkl', 'wb') as output:
         pickle.dump(cppn, output)
 
