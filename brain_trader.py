@@ -46,7 +46,7 @@ class PaperTrader:
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*24))
         self.start_amount = start_amount
-        file = open("es_trade_god_cppn.pkl",'rb')
+        file = open("es_trade_god_cppn_better_substrate.pkl",'rb')
         self.cppn = pickle.load(file)
         file.close()
         self.pull_polo()
@@ -145,8 +145,8 @@ class PaperTrader:
             return
         else:
             print(self.folio.get_total_btc_value_no_sell(end_prices))
-            for t in range(4):
-                time.sleep(self.ticker_len/4)
+            for t in range(8):
+                time.sleep(self.ticker_len/8)
                 p_vals = self.get_current_balance()
                 print("current value: ", p_vals[0], "current btc holdings: ", p_vals[1])
         self.pull_polo()
