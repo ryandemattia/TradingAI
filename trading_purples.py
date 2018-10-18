@@ -100,10 +100,10 @@ class PurpleTrader:
                 sym = self.hs.coin_dict[x]
                 #print(out[x])
                 try:
-                    elif(out[x] < -.5):
+                    if(out[x] < -.5):
                         #print("selling")
                         portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
-                    if(out[x] > .5):
+                    elif(out[x] > .5):
                         #print("buying")
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                 except:

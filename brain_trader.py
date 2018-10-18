@@ -88,6 +88,13 @@ class PaperTrader:
         self.hist_shaped = pd.Series(self.hist_shaped)
         self.end_idx = len(self.hist_shaped[0])-1
 
+    def get_current_balance(self):
+        self.pull_polo()
+        c_prices = {}
+        for s in self.currentHists:
+            c_prices[s] = self.currentHists[s]['close'][len(self.currentHists[s]['close'])-1]
+        return self.folio.get_total_btc_value_no_sell(c_prices)
+        
     def get_one_bar_input_2d(self):
         active = []
         misses = 0
@@ -133,11 +140,15 @@ class PaperTrader:
             end_prices[sym] = self.hist_shaped[x][len(self.hist_shaped[x])-1][2]
         
         if datetime.now() >= self.end_ts:
-            print(self.folio.get_total_btc_value(end_prices))
+            port_info = self.folio.get_total_btc_value(end_prices)
+            print("total val: ", port_info[0], "btc balance: ", port_info[1])
             return
         else:
             print(self.folio.get_total_btc_value_no_sell(end_prices))
-            time.sleep(self.ticker_len)
+            for t in range(4):
+                time.sleep(self.ticker_len/4)
+                p_vals = self.get_current_balance()
+                print("current value: ", p_vals[0], "current btc holdings: ", p_vals[1])
         self.pull_polo()
         self.poloTrader()
                         
