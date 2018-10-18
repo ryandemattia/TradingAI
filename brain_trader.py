@@ -38,8 +38,6 @@ class PaperTrader:
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
                                 neat.species.DefaultSpeciesSet, neat.stagnation.DefaultStagnation,
                                 'config_trader')
-    in_shapes = []
-    out_shapes = []
     def __init__(self, ticker_len, start_amount):
         self.polo = Poloniex()
         self.currentHists = {}
@@ -54,14 +52,18 @@ class PaperTrader:
         self.pull_polo()
         self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1]-1)
         self.outputs = self.hist_shaped.shape[0]
+        self.multiplier = self.inputs/self.outputs
         self.folio = CryptoFolio(start_amount, self.coin_dict)
+        
+    def make_shapes(self):
+        self.in_shapes = []
+        self.out_shapes = []
         sign = 1
         for ix in range(self.outputs):
             sign = sign *-1
             self.out_shapes.append((sign*ix, 1))
             for ix2 in range(len(self.hist_shaped[0][0])-1):
                 self.in_shapes.append((sign*ix, (1+ix2)*.1))
-        self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         
     def pull_polo(self):
         self.coins = self.polo.returnTicker()
@@ -84,10 +86,11 @@ class PaperTrader:
                 except:
                     print("error reading json")
         self.hist_shaped = pd.Series(self.hist_shaped)
-        self.end_idx = len(self.hist_shaped[0])
+        self.end_idx = len(self.hist_shaped[0])-1
 
     def get_one_bar_input_2d(self):
         active = []
+        misses = 0
         for x in range(0, self.outputs):
             try:
                 sym_data = self.hist_shaped[x][self.end_idx] 
@@ -95,15 +98,19 @@ class PaperTrader:
                     if (i != 1):
                         active.append(sym_data[i].tolist())
             except:
+                self.outputs -= 1
+                self.inputs -= self.multiplier
                 print('error')
         #print(active)
+        self.make_shapes()
         return active
         
     def poloTrader(self):
         end_prices = {}
-        network = ESNetwork(self.subStrate, self.cppn, self.params)
-        net = network.create_phenotype_network()
         active = self.get_one_bar_input_2d()
+        sub = Substrate(self.in_shapes, self.out_shapes)
+        network = ESNetwork(sub, self.cppn, self.params)
+        net = network.create_phenotype_network()
         net.reset()
         for n in range(network.activations):
             out = net.activate(active)
@@ -114,22 +121,22 @@ class PaperTrader:
             sym = self.coin_dict[x]
             #print(out[x])
             try:
-                if(out[x] > .5):
-                    print("buying: ", sym)
-                    self.folio.buy_coin(sym, self.currentHists[sym]['close'][self.end_idx])
-                elif(out[x] < -.5):
+                if(out[x] < -.5):
                     print("selling: ", sym)
                     self.folio.sell_coin(sym, self.currentHists[sym]['close'][self.end_idx])
+                elif(out[x] > .5):
+                    print("buying: ", sym)
+                    self.folio.buy_coin(sym, self.currentHists[sym]['close'][self.end_idx])
             except:
                 print('error', sym)
             #skip the hold case because we just dont buy or sell hehe
-            end_prices[sym] = self.hist_shaped[x][self.end_idx][2]
+            end_prices[sym] = self.hist_shaped[x][len(self.hist_shaped[x])-1][2]
         
         if datetime.now() >= self.end_ts:
             print(self.folio.get_total_btc_value(end_prices))
             return
         else:
-            print(self.folio)
+            print(self.folio.get_total_btc_value_no_sell(end_prices))
             time.sleep(self.ticker_len)
         self.pull_polo()
         self.poloTrader()
