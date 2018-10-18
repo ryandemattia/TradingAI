@@ -9,7 +9,7 @@ from itertools import product
 import numpy as np
 from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
-from random import randint
+from random import randint, shuffle
 # Local
 import neat.nn
 import _pickle as pickle
@@ -23,13 +23,14 @@ class PurpleTrader:
 
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
-            "max_depth": 1, 
+            "max_depth": 4, 
             "variance_threshold": 0.03, 
-            "band_threshold": 0.2, 
+            "band_threshold": 0.3, 
             "iteration_level": 1,
-            "division_threshold": 0.4, 
+            "division_threshold": 0.3, 
             "max_weight": 5.0, 
             "activation": "tanh"}
+
 
     # Config for CPPN.
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
@@ -52,12 +53,11 @@ class PurpleTrader:
         sign = 1
         for ix in range(self.outputs):
             sign = sign *-1
-            self.out_shapes.append((ix*sign, sign*-1))
+            self.out_shapes.append((sign*ix, 1))
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
-                sign = sign*1
-                self.in_shapes.append((ix*sign, sign*ix2*.1*-1))
+                self.in_shapes.append((sign*ix, (1+ix2)*.1))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 48
+        self.epoch_len = 55
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -77,7 +77,7 @@ class PurpleTrader:
         return active
 
     def evaluate(self, network, es, rand_start, verbose=False):
-        portfolio = CryptoFolio(1, self.hs.coin_dict)
+        portfolio = CryptoFolio(.5, self.hs.coin_dict)
         end_prices = {}
         buys = 0
         sells = 0 
@@ -94,21 +94,22 @@ class PurpleTrader:
             for n in range(es.activations):
                 out = network.activate(active)
             #print(len(out))
-            for x in range(len(out)):
+            rng = len(out)
+            #rng = iter(shuffle(rng))
+            for x in np.random.permutation(rng):
                 sym = self.hs.coin_dict[x]
                 #print(out[x])
                 try:
-                    if(out[x] > .5):
-                        #print("buying")
-                        portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                     elif(out[x] < -.5):
                         #print("selling")
                         portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
+                    if(out[x] > .5):
+                        #print("buying")
+                        portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                 except:
                     print('error', sym)
                 #skip the hold case because we just dont buy or sell hehe
-        for y in range(len(out)):
-            end_prices[self.hs.coin_dict[y]] = self.hs.hist_shaped[y][self.epoch_len][2]
+                end_prices[sym] = self.hs.hist_shaped[x][self.epoch_len][2]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
         return result_val[0]
@@ -143,7 +144,7 @@ def run_pop(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader()
-    winner = run_pop(task, 2)[0]
+    winner = run_pop(task, 16)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
@@ -153,7 +154,7 @@ if __name__ == '__main__':
     winner_net = network.create_phenotype_network(filename='es_god_trader_winner.png')  # This will also draw winner_net.
 
     # Save CPPN if wished reused and draw it to file.
-    #draw_net(cppn, filename="es_trade_god")
+    draw_net(cppn, filename="es_trade_god")
     with open('es_trade_god_cppn.pkl', 'wb') as output:
         pickle.dump(cppn, output)
 

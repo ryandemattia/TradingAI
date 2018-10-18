@@ -114,4 +114,5 @@ hs = HistWorker()
 print(len(hs.hist_shaped))
 print(len(hs.coin_dict))
 print(hs.hist_shaped[0][0][1])
+print(hs.hist_shaped[0][1][1])
 
