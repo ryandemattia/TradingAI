@@ -137,10 +137,12 @@ class PaperTrader:
             return
         else:
             print(self.folio.get_total_btc_value_no_sell(end_prices))
-            time.sleep(self.ticker_len)
+            for t in range(4):
+                print(self.folio.ledger)
+                time.sleep(self.ticker_len/4)
         self.pull_polo()
         self.poloTrader()
                         
 
-pt = PaperTrader(7200, .5)
+pt = PaperTrader(7200, .05)
 pt.poloTrader()
