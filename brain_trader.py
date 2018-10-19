@@ -23,6 +23,42 @@ from pureples.es_hyperneat.es_hyperneat import ESNetwork
 #polo = Poloniex('key', 'secret')
 
 
+class LiveTrader:
+    params = {"initial_depth": 0, 
+            "max_depth": 4, 
+            "variance_threshold": 0.03, 
+            "band_threshold": 0.3, 
+            "iteration_level": 1,
+            "division_threshold": 0.3, 
+            "max_weight": 5.0, 
+            "activation": "tanh"}
+
+
+    # Config for CPPN.
+    config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
+                                neat.species.DefaultSpeciesSet, neat.stagnation.DefaultStagnation,
+                                'config_trader')
+    def __init__(self, ticker_len, start_amount):
+        self.polo = Poloniex()
+        self.currentHists = {}
+        self.hist_shaped = {}
+        self.coin_dict = {}
+        self.ticker_len = ticker_len
+        self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*24))
+        self.start_amount = start_amount
+        file = open("es_trade_god_cppn_better_substrate.pkl",'rb')
+        self.cppn = pickle.load(file)
+        file.close()
+        self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1]-1)
+        self.outputs = self.hist_shaped.shape[0]
+        self.multiplier = self.inputs/self.outputs
+        self.folio = CryptoFolio(start_amount, self.coin_dict)
+
+
+
+
+
+
 class PaperTrader:
     params = {"initial_depth": 0, 
             "max_depth": 4, 
@@ -46,7 +82,7 @@ class PaperTrader:
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*24))
         self.start_amount = start_amount
-        file = open("./champs/es_trade_god_cppn55_deep.pkl",'rb')
+        file = open("es_trade_god_cppn_better_substrate.pkl",'rb')
         self.cppn = pickle.load(file)
         file.close()
         self.pull_polo()
@@ -146,11 +182,11 @@ class PaperTrader:
             return
         else:
             print(self.get_current_balance())
-            for t in range(8):
-                time.sleep(self.ticker_len/8)
+            for t in range(30):
+                time.sleep(self.ticker_len/30)
                 p_vals = self.get_current_balance()
                 print("current value: ", p_vals[0], "current btc holdings: ", p_vals[1])
-                print(self.folio.ledger)
+                #print(self.folio.ledger)
         self.pull_polo()
         self.poloTrader()
                         
