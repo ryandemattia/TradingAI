@@ -46,7 +46,7 @@ class PaperTrader:
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*24))
         self.start_amount = start_amount
-        file = open("es_trade_god_cppn_better_substrate.pkl",'rb')
+        file = open("./champs/es_trade_god_cppn55_deep.pkl",'rb')
         self.cppn = pickle.load(file)
         file.close()
         self.pull_polo()
@@ -91,8 +91,9 @@ class PaperTrader:
     def get_current_balance(self):
         self.pull_polo()
         c_prices = {}
-        for s in self.currentHists:
-            c_prices[s] = self.currentHists[s]['close'][len(self.currentHists[s]['close'])-1]
+        for s in self.folio.ledger.keys():
+            if s != 'BTC':
+                c_prices[s] = self.currentHists[s]['close'][len(self.currentHists[s]['close'])-1]
         return self.folio.get_total_btc_value_no_sell(c_prices)
         
     def get_one_bar_input_2d(self):
@@ -144,14 +145,15 @@ class PaperTrader:
             print("total val: ", port_info[0], "btc balance: ", port_info[1])
             return
         else:
-            print(self.folio.get_total_btc_value_no_sell(end_prices))
+            print(self.get_current_balance())
             for t in range(8):
                 time.sleep(self.ticker_len/8)
                 p_vals = self.get_current_balance()
                 print("current value: ", p_vals[0], "current btc holdings: ", p_vals[1])
+                print(self.folio.ledger)
         self.pull_polo()
         self.poloTrader()
                         
 
-pt = PaperTrader(7200, .5)
+pt = PaperTrader(7200, .05)
 pt.poloTrader()
