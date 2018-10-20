@@ -102,11 +102,11 @@ class PaperTrader:
     def get_one_bar_input_2d(self):
         active = []
         misses = 0
-        for x in range(0, self.outputs):
+        for x in self.currentHists.keys():
             try:
-                sym_data = self.hist_shaped[x]
-                for i in range(len(sym_data)):
-                    if (i != 1):
+                sym_data = self.currentHists[x]
+                for i in sym_data.keys():
+                    if (i != 'date'):
                         active.append(sym_data[i])
             except:
                 self.outputs -= 1

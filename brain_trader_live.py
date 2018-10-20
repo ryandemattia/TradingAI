@@ -191,4 +191,4 @@ class PaperTraderLive:
         self.pull_polo()
         self.poloTrader()
                         
-p = Poloniex()
+
