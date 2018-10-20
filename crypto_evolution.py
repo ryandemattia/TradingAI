@@ -59,8 +59,10 @@ class CryptoFolio:
         for c in self.ledger.keys():
             if self.ledger[c] != 0.0 and c != "BTC":
                 current_price = e_prices[c]
-                btcval += current_price * self.ledger[c]
-        return btcval
+                btc_amt = current_price * self.ledger[c]
+                btcval += btc_amt
+                print(c, " ", btc_amt)
+        return btcval, self.ledger['BTC']
 
     def evaluate_output(self, out, coin, price):
         if (out == 1.0):

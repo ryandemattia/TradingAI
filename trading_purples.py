@@ -144,7 +144,7 @@ def run_pop(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader()
-    winner = run_pop(task, 5)[0]
+    winner = run_pop(task, 16)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
