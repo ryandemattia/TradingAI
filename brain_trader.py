@@ -102,7 +102,11 @@ class PaperTrader:
                 self.in_shapes.append((sign*ix, (1+ix2)*.1))
         
     def pull_polo(self):
-        self.coins = self.polo.returnTicker()
+        try:
+            self.coins = self.polo.returnTicker()
+        except:
+            sleep(10)
+            self.pull_polo()
         tickLen = '7200'
         start = datetime.today() - timedelta(1) 
         start = str(int(start.timestamp()))
@@ -182,11 +186,12 @@ class PaperTrader:
             return
         else:
             print(self.get_current_balance())
-            for t in range(4):
+            for t in range(3):
                 time.sleep(self.ticker_len/4)
                 p_vals = self.get_current_balance()
                 print("current value: ", p_vals[0], "current btc holdings: ", p_vals[1])
                 #print(self.folio.ledger)
+        time.sleep(self.ticker_len/4)
         self.pull_polo()
         self.poloTrader()
                         
