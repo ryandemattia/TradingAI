@@ -82,7 +82,7 @@ class PaperTrader:
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*24))
         self.start_amount = start_amount
-        file = open("es_trade_god_cppn_better_substrate.pkl",'rb')
+        file = open("es_trade_god_cppn.pkl",'rb')
         self.cppn = pickle.load(file)
         file.close()
         self.pull_polo()
@@ -105,7 +105,7 @@ class PaperTrader:
         try:
             self.coins = self.polo.returnTicker()
         except:
-            sleep(10)
+            time.sleep(10)
             self.pull_polo()
         tickLen = '7200'
         start = datetime.today() - timedelta(1) 
@@ -196,5 +196,3 @@ class PaperTrader:
         self.poloTrader()
                         
 
-pt = PaperTrader(7200, .05)
-pt.poloTrader()
