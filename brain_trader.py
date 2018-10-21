@@ -46,14 +46,69 @@ class LiveTrader:
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*24))
         self.start_amount = start_amount
-        file = open("es_trade_god_cppn_better_substrate.pkl",'rb')
+        file = open("es_trade_god_cppn.pkl",'rb')
         self.cppn = pickle.load(file)
         file.close()
+        self.pull_polo()
         self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1]-1)
         self.outputs = self.hist_shaped.shape[0]
         self.multiplier = self.inputs/self.outputs
         self.folio = CryptoFolio(start_amount, self.coin_dict)
+        
+    def make_shapes(self):
+        self.in_shapes = []
+        self.out_shapes = []
+        sign = 1
+        for ix in range(self.outputs):
+            sign = sign *-1
+            self.out_shapes.append((sign*ix, 1))
+            for ix2 in range(len(self.hist_shaped[0][0])-1):
+                self.in_shapes.append((sign*ix, (1+ix2)*.1))
+        
+    def pull_polo(self):
+        try:
+            self.coins = self.polo.returnTicker()
+        except:
+            time.sleep(10)
+            self.pull_polo()
+        tickLen = '7200'
+        start = datetime.today() - timedelta(1) 
+        start = str(int(start.timestamp()))
+        ix = 0
+        for coin in self.coins:
+            if coin[:3] == 'BTC':
+                hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
+                try:
+                    df = pd.DataFrame(hist.json())
+                    #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
+                    as_array = np.array(df)
+                    #print(len(as_array))
+                    self.currentHists[coin] = df
+                    self.hist_shaped[ix] = as_array
+                    self.coin_dict[ix] = coin
+                    ix += 1
+                except:
+                    print("error reading json")
+        self.hist_shaped = pd.Series(self.hist_shaped)
+        self.end_idx = len(self.hist_shaped[0])-1
 
+
+    def get_one_bar_input_2d(self):
+        active = []
+        misses = 0
+        for x in range(0, self.outputs):
+            try:
+                sym_data = self.hist_shaped[x][self.end_idx] 
+                for i in range(len(sym_data)):
+                    if (i != 1):
+                        active.append(sym_data[i].tolist())
+            except:
+                self.outputs -= 1
+                self.inputs -= self.multiplier
+                print('error')
+        #print(active)
+        self.make_shapes()
+        return active
 
 
 
@@ -196,3 +251,5 @@ class PaperTrader:
         self.poloTrader()
                         
 
+pt = PaperTrader(7200, .05)
+pt.poloTrader()
