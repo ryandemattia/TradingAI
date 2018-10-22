@@ -136,7 +136,7 @@ class LiveTrader:
         return 
 
     def sell_coin(self, coin, price):
-        amt = self.bal[coin]
+        amt = self.bal[coin[4:]]
         try:
             self.polo.sell(coin, price, amt, fillOrKill=1)
         except:
