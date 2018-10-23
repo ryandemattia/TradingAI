@@ -57,11 +57,7 @@ class PurpleTrader:
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
                 self.in_shapes.append((sign*ix, (1+ix2)*.1))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-<<<<<<< HEAD
-        self.epoch_len = 12
-=======
         self.epoch_len = 55
->>>>>>> 49ebaae40f85b41ca06986090f18562f380d7bd3
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
