@@ -41,17 +41,18 @@ class LiveTrader:
                                 'config_trader')
     def __init__(self, ticker_len, target_percent):
         self.polo = Poloniex(key, secret)
+        self.target_percent = target_percent
         self.currentHists = {}
         self.hist_shaped = {}
         self.coin_dict = {}
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*55))
-        file = open("es_trade_god_cppn.pkl",'rb')
+        file = open("es_trade_god_cppn_5day.pkl",'rb')
         self.cppn = pickle.load(file)
         file.close()
         self.tickers = self.polo.returnTicker()
         self.bal = self.polo.returnBalances()
-        self.target = self.bal['BTC']*target_percent
+        self.set_target()
         self.pull_polo()
         self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1]-1)
         self.outputs = self.hist_shaped.shape[0]
@@ -120,27 +121,27 @@ class LiveTrader:
                     
                     
                     
-    def sellCoins(self, coinlist, currency):
-        balances = self.polo.returnBalances()
-        for b in balances:
-            bal = balances[b]*.99
+    def sellCoins(self):
+        for b in self.tickers:
+            if(b[:3] == "BTC"):
+                try:
+                    price = self.get_price(b)
+                    price = price - (price * .005)
+                    self.sell_coin(b, price)
+                except:
+                    print("error getting price: ", b)
 
     def buy_coin(self, coin, price):
-        amt = self.target
+        amt = self.target / price
         if(self.bal['BTC'] > self.target):
-            try:
-                self.polo.buy(coin, price, amt, fillOrKill=1)
-                print("buying: ", coin)
-            except:
-                print('error buying', coin)
+            self.polo.buy(coin, price, amt, fillOrKill=1)
+            print("buying: ", coin)
         return 
 
     def sell_coin(self, coin, price):
-        amt = self.bal[coin]
-        try:
-            self.polo.sell(coin, price, amt, fillOrKill=1)
-        except:
-            print('error selling: ', coin)
+        amt = self.bal[coin[4:]]
+        self.polo.sell(coin, price, amt, fillOrKill=1)
+        print("selling: ", coin)
         return 
 
     def reset_tickers(self):
@@ -148,6 +149,13 @@ class LiveTrader:
         return 
     def get_price(self, coin):
         return self.tickers[coin]['last']
+    
+    def set_target(self):
+        total = 0
+        full_bal = self.polo.returnCompleteBalances()
+        for x in full_bal:
+            total += self.bal[x]["btcValue"]
+        self.target = total*self.target_percent
 
     def poloTrader(self):
         end_prices = {}
@@ -161,16 +169,21 @@ class LiveTrader:
         #print(len(out))
         rng = len(out)
         #rng = iter(shuffle(rng))
+        self.reset_tickers()
         for x in np.random.permutation(rng):
             sym = self.coin_dict[x]
             #print(out[x])
             try:
                 if(out[x] < -.5):
                     print("selling: ", sym)
-                    self.sell_coin(sym, self.get_price(sym), )
+                    p = self.get_price(sym)
+                    price = p -(p*.005)
+                    self.sell_coin(sym, price)
                 elif(out[x] > .5):
                     print("buying: ", sym)
-                    self.buy_coin(sym, self.get_price(sym))
+                    p = self.get_price(sym)
+                    price = p*1.002
+                    self.buy_coin(sym, price)
             except:
                 print('error', sym)
             #skip the hold case because we just dont buy or sell hehe
@@ -180,9 +193,9 @@ class LiveTrader:
             return
         else:
             time.sleep(self.ticker_len)
-        self.reset_tickers
         self.pull_polo()
         self.poloTrader()
+
 class PaperTrader:
     params = {"initial_depth": 0, 
             "max_depth": 4, 
@@ -322,5 +335,5 @@ class PaperTrader:
 
 
 live = LiveTrader(7200, .1)
-
 live.poloTrader()
+
