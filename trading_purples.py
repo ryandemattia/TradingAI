@@ -44,11 +44,12 @@ class PurpleTrader:
 
     in_shapes = []
     out_shapes = []
-    def __init__(self):
+    def __init__(self, hist_depth):
         self.hs = HistWorker()
+        self.hd = hist_depth
         self.end_idx = len(self.hs.currentHists["DASH"])
         self.but_target = .1
-        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1)
+        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1) * self.hd
         self.outputs = self.hs.hist_shaped.shape[0]
         sign = 1
         for ix in range(self.outputs):
@@ -65,14 +66,16 @@ class PurpleTrader:
 
     def get_one_bar_input_2d(self, end_idx):
         active = []
-        for x in range(0, self.outputs):
-            try:
-                sym_data = self.hs.hist_shaped[x][end_idx] 
-                for i in range(len(sym_data)):
-                    if (i != 1):
-                        active.append(sym_data[i].tolist())
-            except:
-                print('error')
+        look_back = end_idx - self.hd
+        for d in range(0, self.hd):
+            for x in range(0, self.outputs):
+                try:
+                    sym_data = self.hs.hist_shaped[x][look_back+d] 
+                    for i in range(len(sym_data)):
+                        if (i != 1):
+                            active.append(sym_data[i].tolist())
+                except:
+                    print('error')
         #print(active)
         return active
 
