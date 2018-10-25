@@ -109,3 +109,11 @@ class HistWorker:
         self.hist_full_size = 4380
         return
 
+<<<<<<< HEAD
+=======
+hs = HistWorker()
+
+
+
+
+>>>>>>> v1.1
