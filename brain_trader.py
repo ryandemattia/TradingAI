@@ -57,7 +57,7 @@ class LiveTrader:
         self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1]-1)
         self.outputs = self.hist_shaped.shape[0]
         self.multiplier = self.inputs/self.outputs
-        
+
     def make_shapes(self):
         self.in_shapes = []
         self.out_shapes = []
@@ -154,7 +154,7 @@ class LiveTrader:
         total = 0
         full_bal = self.polo.returnCompleteBalances()
         for x in full_bal:
-            total += self.bal[x]["btcValue"]
+            total += full_bal[x]["btcValue"]
         self.target = total*self.target_percent
 
     def poloTrader(self):
@@ -177,7 +177,7 @@ class LiveTrader:
                 if(out[x] < -.5):
                     print("selling: ", sym)
                     p = self.get_price(sym)
-                    price = p -(p*.005)
+                    price = p -(p*.01)
                     self.sell_coin(sym, price)
                 elif(out[x] > .5):
                     print("buying: ", sym)
