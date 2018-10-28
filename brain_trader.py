@@ -182,7 +182,7 @@ class LiveTrader:
                 elif(out[x] > .5):
                     print("buying: ", sym)
                     p = self.get_price(sym)
-                    price = p*1.002
+                    price = p*1.01
                     self.buy_coin(sym, price)
             except:
                 print('error', sym)
