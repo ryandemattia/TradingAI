@@ -54,7 +54,7 @@ class PurpleTrader:
         sign = 1
         for ix in range(self.outputs):
             sign = sign *-1
-            self.out_shapes.append((sign*ix, 1))
+            self.out_shapes.append((1/sign*ix, 0, 1/2))
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
                 for ix3 in range(self.hd):
                     self.in_shapes.append((sign*ix, ((1+ix2)*.1)))
