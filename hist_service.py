@@ -6,7 +6,7 @@ import numpy as np
 from poloniex import Poloniex
 from datetime import date, timedelta, datetime 
 import os
-from ephemGravityWrapper import gravity as gbaby
+#from ephemGravityWrapper import gravity as gbaby
 '''
 As can be expected by this point, you will notice that 
 nothing done here has been done in the best possible way
@@ -34,7 +34,7 @@ class HistWorker:
     def get_file_symbol(self, f):
         f = f.split("_", 2)
         return f[1]
-
+    '''
     def get_data_for_astro(self):
         data = {}
         dates = []
@@ -50,7 +50,7 @@ class HistWorker:
         data.to_csv("moon_dists.txt", encoding="utf-8")
         #data = data.join(self.currentHists['DASH'].set_index('date'), on='date', how="left").drop('Unnamed: 0', 1)
         return data.head()
-
+    '''
     def read_in_moon_data(self, df):
         moon = pd.read_csv('./moon_dists.txt')
         moon.set_index("date")
@@ -73,7 +73,7 @@ class HistWorker:
                     frame.to_csv("./histories/"+coin+"_hist.txt", encoding="utf-8")
                 except:
                     print("error reading json")
-        self.get_data_for_astro()
+        #self.get_data_for_astro()
 
     
     def combine_frames(self):
