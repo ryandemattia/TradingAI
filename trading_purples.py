@@ -24,11 +24,7 @@ class PurpleTrader:
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 0, 
             "max_depth": 4, 
-<<<<<<< HEAD
-            "variance_threshold": 0.05, 
-=======
             "variance_threshold": 0.04, 
->>>>>>> threed_sub
             "band_threshold": 0.3, 
             "iteration_level": 5,
             "division_threshold": 0.5, 
