@@ -27,7 +27,7 @@ class PurpleTrader:
             "variance_threshold": 0.04, 
             "band_threshold": 0.3, 
             "iteration_level": 5,
-            "division_threshold": 0.5, 
+            "division_threshold": 0.05, 
             "max_weight": 5.0, 
             "activation": "tanh"}
 
@@ -56,7 +56,7 @@ class PurpleTrader:
             sign = sign *-1
             self.out_shapes.append((1/sign*ix, .0, .5))
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
-                self.in_shapes.append((1/sign*ix, 1-(1/sign*ix), .5))
+                self.in_shapes.append((1/sign*ix, 1-(1/sign*ix2), .5))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 8
         
@@ -152,13 +152,13 @@ if __name__ == '__main__':
     print('\nOutput:')
     cppn = neat.nn.FeedForwardNetwork.create(winner, task.config)
     network = ESNetwork(task.subStrate, cppn, task.params)
-    winner_net = network.create_phenotype_network(filename='es_god_trader_winner.png')  # This will also draw winner_net.
+    winner_net = network.create_phenotype_network_nd()  # This will also draw winner_net.
 
     # Save CPPN if wished reused and draw it to file.
     #draw_net(cppn, filename="es_trade_god")
-    with open('es_trade_god_cppn.pkl', 'wb') as output:
+    with open('es_trade_god_cppn_3d.pkl', 'wb') as output:
         pickle.dump(cppn, output)
-
+    draw_net(cppn, filename="es_trade_god")
     '''
     for x in range(len(task.hs.hist_shaped[0])):
         print(task.hs.hist_shaped[1][x][3],task.hs.hist_shaped[0][x][3])
