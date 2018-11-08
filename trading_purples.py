@@ -27,7 +27,7 @@ class PurpleTrader:
             "variance_threshold": 0.04, 
             "band_threshold": 0.3, 
             "iteration_level": 5,
-            "division_threshold": 0.05, 
+            "division_threshold": 0.03, 
             "max_weight": 5.0, 
             "activation": "tanh"}
 
@@ -58,7 +58,7 @@ class PurpleTrader:
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
                 self.in_shapes.append((1/sign*ix, 1-(1/sign*ix2), .5))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 21
+        self.epoch_len = 55
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -145,7 +145,7 @@ def run_pop(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader(5)
-    winner = run_pop(task, 5)[0]
+    winner = run_pop(task, 55)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
