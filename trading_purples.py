@@ -49,7 +49,7 @@ class PurpleTrader:
         self.hd = hist_depth
         self.end_idx = len(self.hs.currentHists["DASH"])
         self.but_target = .1
-        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1) * self.hd
+        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1)
         self.outputs = self.hs.hist_shaped.shape[0]
         sign = 1
         for ix in range(self.outputs):
@@ -58,7 +58,7 @@ class PurpleTrader:
             for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
                 self.in_shapes.append((1/sign*ix, 1-(1/sign*ix), .5))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 55
+        self.epoch_len = 8
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -66,16 +66,14 @@ class PurpleTrader:
 
     def get_one_bar_input_2d(self, end_idx):
         active = []
-        look_back = end_idx - self.hd
-        for d in range(0, self.hd):
-            for x in range(0, self.outputs):
-                try:
-                    sym_data = self.hs.hist_shaped[x][look_back+d] 
-                    for i in range(len(sym_data)):]d]
-                        if (i != 1):
-                            active.append(sym_data[i].tolist())
-                except:
-                    print('error')
+        for x in range(0, self.outputs):
+            try:
+                sym_data = self.hs.hist_shaped[x][end_idx] 
+                for i in range(len(sym_data)):
+                    if (i != 1):
+                        active.append(sym_data[i].tolist())
+            except:
+                print('error')
         #print(active)
         return active
 
@@ -127,7 +125,7 @@ class PurpleTrader:
 
             cppn = neat.nn.FeedForwardNetwork.create(g, config)
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network()
+            net = network.create_phenotype_network_nd()
             g.fitness = self.evaluate(net, network, r_start)
         
 
@@ -146,7 +144,7 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader()
+    task = PurpleTrader(5)
     winner = run_pop(task, 5)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
