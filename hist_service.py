@@ -62,7 +62,7 @@ class HistWorker:
         polo = Poloniex()
         coins = polo.returnTicker()
         tickLen = '7200'
-        start = datetime.today() - timedelta(365) 
+        start = datetime.today() - timedelta(565) 
         start = str(int(start.timestamp()))
         for coin in coins:
             if coin[:3] == 'BTC':
@@ -111,6 +111,7 @@ class HistWorker:
 
 hs = HistWorker()
 
+hs.pull_polo()
 
 
 
