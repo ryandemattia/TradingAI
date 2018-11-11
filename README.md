@@ -5,7 +5,7 @@ currently adding a hyperneat genetic encoded nn and fitness task optimized for w
 THE SETUP:
 
 First create a folder and cd into via the command line, then you will want to make a python virtual environment. Once that is done you can "git clone https://github.com/nickwilliamsnewby/cryptochronolonic.git " cd in and do 
-git checkout latest. Then run pip install -r requirements.txt and then cd .. back out of the folder.
+git checkout latest-c9. Then run pip install -r requirements.txt and then cd .. back out of the folder.
 then you also need to clone neat-python (https://github.com/nickwilliamsnewby/neat-python.git) cd into it and do a "git checkout python3-rnn-fix" before running "python setup.py build", followed by "python setup.py install".
 Now cd .. back into the folder you created at the started you need to clone https://github.com/nickwilliamsnewby/pureples.git cd into it run git checkout latests then again we run 
 "python setup.py build", followed by "python setup.py install". 
