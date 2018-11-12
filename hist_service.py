@@ -112,8 +112,4 @@ class HistWorker:
         '''
 
 
-hs = HistWorker()
-
-hs.pull_polo()
-
 
