@@ -22,6 +22,15 @@ and occurs at the same intervals
 the properties for histworker are set for the most part in combine frames which is called from the constructor
 '''
 class HistWorker:
+    look_back = 0
+    def __init__(self):
+        self.currentHists = {}
+        self.hist_shaped = {}
+        self.coin_dict = {}
+        self.combine_frames()
+        self.look_back = 666
+        self.hist_full_size = 666*12
+        return
     
     def get_hist_files(self):
         histFiles = os.listdir(os.path.join(os.path.dirname(__file__), 'histories'))
@@ -62,7 +71,7 @@ class HistWorker:
         polo = Poloniex()
         coins = polo.returnTicker()
         tickLen = '7200'
-        start = datetime.today() - timedelta(365) 
+        start = datetime.today() - timedelta(self.look_back) 
         start = str(int(start.timestamp()))
         for coin in coins:
             if coin[:3] == 'BTC':
@@ -77,7 +86,7 @@ class HistWorker:
 
     
     def combine_frames(self):
-        length = 4380
+        length = self.look_back * 12
         fileNames = self.get_hist_files()
         coin_and_hist_index = 0
         for x in range(0,len(fileNames)):
@@ -101,16 +110,10 @@ class HistWorker:
             main = main.join(df_list[i])
         return main
         '''
-    def __init__(self):
-        self.currentHists = {}
-        self.hist_shaped = {}
-        self.coin_dict = {}
-        self.combine_frames()
-        self.hist_full_size = 4380
-        return
+
 
 hs = HistWorker()
 
-
+hs.pull_polo()
 
 
