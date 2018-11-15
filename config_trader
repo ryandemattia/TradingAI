@@ -3,8 +3,13 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 10
+<<<<<<< HEAD
 pop_size              = 21
 reset_on_extinction   = False
+=======
+pop_size              = 80
+reset_on_extinction   = True
+>>>>>>> ed934c432e29aa05edc08264dd3f0890e08c32db
 
 [DefaultGenome]
 # node activation options

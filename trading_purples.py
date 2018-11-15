@@ -27,7 +27,7 @@ class PurpleTrader:
             "variance_threshold": 0.03, 
             "band_threshold": 0.03, 
             "iteration_level": 5,
-            "division_threshold": 0.05, 
+            "division_threshold": 0.03, 
             "max_weight": 5.0, 
             "activation": "tanh"}
 
