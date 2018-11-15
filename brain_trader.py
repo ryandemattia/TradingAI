@@ -51,6 +51,7 @@ class LiveTrader:
         self.cppn = pickle.load(file)
         file.close()
         self.tickers = self.polo.returnTicker()
+        self.sellCoins()
         self.bal = self.polo.returnBalances()
         self.set_target()
         self.pull_polo()
