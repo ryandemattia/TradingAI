@@ -22,12 +22,12 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 0, 
+    params = {"initial_depth": 2, 
             "max_depth": 4, 
-            "variance_threshold": 0.04, 
-            "band_threshold": 0.3, 
+            "variance_threshold": 0.03, 
+            "band_threshold": 0.03, 
             "iteration_level": 5,
-            "division_threshold": 0.5, 
+            "division_threshold": 0.003, 
             "max_weight": 5.0, 
             "activation": "tanh"}
 
@@ -47,18 +47,18 @@ class PurpleTrader:
     def __init__(self, hist_depth):
         self.hs = HistWorker()
         self.hd = hist_depth
-        self.end_idx = len(self.hs.currentHists["DASH"])
+        self.end_idx = len(self.hs.currentHists["XCP"])
         self.but_target = .1
-        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1) * self.hd
+        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1)
         self.outputs = self.hs.hist_shaped.shape[0]
         sign = 1
-        for ix in range(self.outputs):
+        for ix in range(1,self.outputs+1):
             sign = sign *-1
-            self.out_shapes.append((1/sign*ix, .0, .5))
-            for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
-                self.in_shapes.append((1/sign*ix, 1-(1/sign*ix), .5))
+            self.out_shapes.append((sign/ix, .0, 1.0*sign))
+            for ix2 in range(1,len(self.hs.hist_shaped[0][0])):
+                self.in_shapes.append((-sign/ix, (sign/ix2), 1.0*sign))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 120
+        self.epoch_len = 360
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -66,16 +66,14 @@ class PurpleTrader:
 
     def get_one_bar_input_2d(self, end_idx):
         active = []
-        look_back = end_idx - self.hd
-        for d in range(0, self.hd):
-            for x in range(0, self.outputs):
-                try:
-                    sym_data = self.hs.hist_shaped[x][look_back+d] 
-                    for i in range(len(sym_data)):]d]
-                        if (i != 1):
-                            active.append(sym_data[i].tolist())
-                except:
-                    print('error')
+        for x in range(0, self.outputs):
+            try:
+                sym_data = self.hs.hist_shaped[x][end_idx] 
+                for i in range(len(sym_data)):
+                    if (i != 1):
+                        active.append(sym_data[i].tolist())
+            except:
+                print('error')
         #print(active)
         return active
 
@@ -127,7 +125,7 @@ class PurpleTrader:
 
             cppn = neat.nn.FeedForwardNetwork.create(g, config)
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network()
+            net = network.create_phenotype_network_nd()
             g.fitness = self.evaluate(net, network, r_start)
         
 
@@ -146,20 +144,21 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader()
-    winner = run_pop(task, 34)[0]
+    task = PurpleTrader(5)
+    winner = run_pop(task, 8)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
     print('\nOutput:')
     cppn = neat.nn.FeedForwardNetwork.create(winner, task.config)
     network = ESNetwork(task.subStrate, cppn, task.params)
-    winner_net = network.create_phenotype_network(filename='es_god_trader_winner.png')  # This will also draw winner_net.
+    with open('es_trade_god_cppn_3d.pkl', 'wb') as output:
+        pickle.dump(cppn, output)
+    #draw_net(cppn, filename="es_trade_god")
+    winner_net = network.create_phenotype_network_nd('dabestest.png')  # This will also draw winner_net.
 
     # Save CPPN if wished reused and draw it to file.
     #draw_net(cppn, filename="es_trade_god")
-    with open('es_trade_god_cppn.pkl', 'wb') as output:
-        pickle.dump(cppn, output)
 
     '''
     for x in range(len(task.hs.hist_shaped[0])):

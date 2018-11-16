@@ -86,7 +86,7 @@ class HistWorker:
 
     
     def combine_frames(self):
-        length = self.look_back * 12
+        length = 7992
         fileNames = self.get_hist_files()
         coin_and_hist_index = 0
         for x in range(0,len(fileNames)):
@@ -112,8 +112,5 @@ class HistWorker:
         '''
 
 
-hs = HistWorker()
-
-hs.pull_polo()
 
 
