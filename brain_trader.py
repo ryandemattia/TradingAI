@@ -51,6 +51,7 @@ class LiveTrader:
         self.cppn = pickle.load(file)
         file.close()
         self.tickers = self.polo.returnTicker()
+        self.sellCoins()
         self.bal = self.polo.returnBalances()
         self.set_target()
         self.pull_polo()
@@ -75,7 +76,10 @@ class LiveTrader:
         ix = 0
         for coin in self.tickers:
             if coin[:3] == 'BTC':
-                hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
+                try:
+                    hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
+                except:
+                    self.pull_polo()
                 try:
                     df = pd.DataFrame(hist.json())
                     #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
