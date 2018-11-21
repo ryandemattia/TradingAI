@@ -27,7 +27,7 @@ class HistWorker:
         self.currentHists = {}
         self.hist_shaped = {}
         self.coin_dict = {}
-        self.combine_frames()
+        #self.combine_frames()
         self.look_back = 666
         self.hist_full_size = 666*12
         return
@@ -77,7 +77,15 @@ class HistWorker:
             if coin[:3] == 'BTC':
                 hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
                 try:
-                    frame = pd.DataFrame(hist.json())
+                    h_frame = pd.DataFrame(hist.json())
+                    frame = h_frame.copy()
+                    frame['avg_vol_3'] = frame['volume'].rolling(3).mean()
+                    frame['avg_vol_13'] = frame['volume'].rolling(13).mean()
+                    frame['avg_vol_34'] = frame['volume'].rolling(34).mean()
+                    frame['avg_close_3'] = frame['close'].rolling(3).mean()
+                    frame['avg_close_13'] = frame['close'].rolling(13).mean()
+                    frame['avg_close_34'] = frame['close'].rolling(34).mean()
+                    frame = frame.fillna(0.0)
                     print(frame.head())
                     frame.to_csv("./histories/"+coin+"_hist.txt", encoding="utf-8")
                 except:
@@ -97,7 +105,7 @@ class HistWorker:
             df = df.drop("Unnamed: 0", 1)
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             as_array = np.array(df)
-            #print(len(as_array))
+            print(len(as_array))
             if(len(as_array) == length):
                 self.currentHists[col_prefix] = df
                 self.hist_shaped[coin_and_hist_index] = as_array
@@ -112,5 +120,7 @@ class HistWorker:
         '''
 
 
-
-
+'''
+hs = HistWorker()
+hs.pull_polo()
+'''
