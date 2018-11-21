@@ -1,6 +1,7 @@
 from flask import request
 from flask import Flask, url_for
 import random
+import requests
 import sys, os
 from functools import partial
 from itertools import product
@@ -34,7 +35,7 @@ class LiqMaster2000:
     config = {}
     
     
-    def get_ip():
+    def get_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             # doesn't even have to be reachable
@@ -50,13 +51,17 @@ class LiqMaster2000:
     def best_pickle(request):
         return "heres your pickle"
         
+    @app.route("/best_pickle/<str:pkl_address>/<str:pkl_name>")
+    def peer_posting_best(request):
         
     
     
-    print(get_ip())
-    
-            
-    
+    def get_endpoint(self, ep):
+        r = requests.get(url='')
+        print(r.json())
+    #used by get_global_best to retrieve best pkl eheheh
+    def retrieve_pkl(pkl_address, pkl_name):
+        
     
     # Create the population and run the XOR task by providing the above fitness function.
     def run_pop(self, task, gens):
@@ -74,8 +79,11 @@ class LiqMaster2000:
         self.local_ip = self.get_ip()
         return
 # If run as script.
-'''
+
 if __name__ == '__main__':
+    cs = LiqMaster2000()
+    print(cs.local_ip)
+    '''
     task = PurpleTrader(5)
     winner = run_pop(task, 21)[0]
     print('\nBest genome:\n{!s}'.format(winner))
