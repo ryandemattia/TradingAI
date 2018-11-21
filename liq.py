@@ -47,9 +47,10 @@ class LiqMaster2000:
             s.close()
         return IP
     
-    @app.route("/")
-    def best_pickle(request):
-        return "heres your pickle"
+    @app.route("/best_round_here")
+    def best_local_pkl(request):
+        champ_name = os.listdir(os.path.join(os.path.dirname(__file__), 'champ'))[0]
+        return champ_name
         
     @app.route("/best_pickle/<str:pkl_address>/<str:pkl_name>")
     def peer_posting_best(request):
