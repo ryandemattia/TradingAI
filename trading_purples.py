@@ -55,12 +55,12 @@ class PurpleTrader:
         self.outputs = 1
         self.num_syms = self.hs.hist_shaped.shape[0]
         sign = 1
-        self.out_shapes.append((.5, 0.0, .5))
+        self.out_shapes.append((.5, .5, .5))
         for x in range(1, self.inputs +1):
             sign = sign * -1
-            self.in_shapes.append((sign/x, 1.0, 1.0-(sign*x)))
+            self.in_shapes.append((sign/x, 1.0, 1.0-(sign/x)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 120
+        self.epoch_len = 36
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -105,11 +105,11 @@ class PurpleTrader:
                 if(out[0] < -.5):
                     #print("selling")
                     portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
-                    print("bought ", sym)
+                    #print("bought ", sym)
                 elif(out[0] > .5):
                     #print("buying")
                     portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
-                    print("sold ", sym)
+                    #print("sold ", sym)
                 #skip the hold case because we just dont buy or sell hehe
                 end_prices[sym] = self.hs.hist_shaped[x][self.epoch_len][2]
         result_val = portfolio.get_total_btc_value(end_prices)
@@ -146,7 +146,7 @@ def run_pop(task, gens):
 # If run as script.
 if __name__ == '__main__':
     task = PurpleTrader(5)
-    winner = run_pop(task, 5)[0]
+    winner = run_pop(task, 155)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
