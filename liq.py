@@ -26,6 +26,7 @@ class LiqMaster2000:
     local_ip = ''
     net_data = {
         'peers': ['localhost:8080, localhost:5050'],
+        'peer_pkls': [],
         'best_pkl': '',
         'local_pkl': '',
         'global_gens': 0,
@@ -52,9 +53,9 @@ class LiqMaster2000:
         champ_name = os.listdir(os.path.join(os.path.dirname(__file__), 'champ'))[0]
         return champ_name
         
-    @app.route("/best_pickle/<str:pkl_address>/<str:pkl_name>")
+    @app.route("/best_pickle/<str:pkl_address>")
     def peer_posting_best(request):
-        
+        p_ep = request.pkl_adress + '/' + 'best_round_here'
     
     
     def get_endpoint(self, ep):
