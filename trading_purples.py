@@ -51,16 +51,16 @@ class PurpleTrader:
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.currentHists["ZEC"])
         self.but_target = .1
-        self.inputs = self.hd*(self.hs.hist_shaped[0].shape[1])
+        self.inputs = (self.hs.hist_shaped[0].shape[1])
         self.outputs = 1
         self.num_syms = self.hs.hist_shaped.shape[0]
         sign = 1
-        self.out_shapes.append((.5, .0, .5))
+        self.out_shapes.append((0.0, -1.0, 0.0))
         for x in range(1, self.inputs +1):
             sign = sign * -1
-            self.in_shapes.append((sign/x, 1.0, -1.0*(sign/x)))
+            self.in_shapes.append((1-(sign/x), 1.0, 1-(sign/x))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 36
+        self.epoch_len = 55
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -72,7 +72,7 @@ class PurpleTrader:
             try:
                 sym_data = self.hs.hist_shaped[sym_idx][end_idx-x]
                 #print(sym_data) 
-                active += sym_data.tolist()
+                active.append(sym_data.tolist())
             except:
                 print('error')
         #print(active)
@@ -97,9 +97,8 @@ class PurpleTrader:
             for x in np.random.permutation(rng):
                 sym = self.hs.coin_dict[x]                
                 active = self.get_one_epoch_input(x, z)
-                network.reset()
-                for n in range(es.activations):
-                    out = network.activate(active)
+                for n in range(1, self.hd+1):
+                    out = network.activate(active[self.hd-n])
             #print(len(out))
                 #print(out[x])
                 if(out[0] < -.5):
@@ -114,6 +113,7 @@ class PurpleTrader:
                 end_prices[sym] = self.hs.hist_shaped[x][self.epoch_len][2]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
+        network.reset()
         return result_val[0]
 
     def solve(self, network):
@@ -145,8 +145,8 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(10)
-    winner = run_pop(task, 55)[0]
+    task = PurpleTrader(13)
+    winner = run_pop(task, 13)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
