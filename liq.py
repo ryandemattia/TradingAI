@@ -52,7 +52,10 @@ class LiqMaster2000:
     def best_local_pkl(request):c
         return send_from_directory('champ', 'best_local.pkl')
         
-    
+    @app.route("/new_peer_net/<str:peer_address>")
+    def add_new_peer(request):
+        self.net_data.peers.append(peer_address)
+        return self.net_data
     @app.route("/best_pickle/<str:peer_address>/<str:pkl_name")
     def peer_posting_best(request):
         p_ep = peer_address+'/'+pkl_name
