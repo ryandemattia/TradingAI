@@ -22,11 +22,11 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 1, 
+    params = {"initial_depth": 0, 
             "max_depth": 4, 
-            "variance_threshold": 0.03, 
-            "band_threshold": 0.03, 
-            "iteration_level": 5,
+            "variance_threshold": 0.003, 
+            "band_threshold": 0.003, 
+            "iteration_level": 4,
             "division_threshold": 0.003, 
             "max_weight": 5.0, 
             "activation": "tanh"}
@@ -55,10 +55,10 @@ class PurpleTrader:
         self.outputs = 1
         self.num_syms = self.hs.hist_shaped.shape[0]
         sign = 1
-        self.out_shapes.append((.5, .5, .5))
+        self.out_shapes.append((.5, .0, .5))
         for x in range(1, self.inputs +1):
             sign = sign * -1
-            self.in_shapes.append((sign/x, 1.0, 1.0-(sign/x)))
+            self.in_shapes.append((sign/x, 1.0, -1.0*(sign/x)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 36
         
@@ -121,7 +121,7 @@ class PurpleTrader:
         
 
     def eval_fitness(self, genomes, config):
-        r_start = randint(0, self.hs.hist_full_size - self.epoch_len)    
+        r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)    
         for idx, g in genomes:
 
             cppn = neat.nn.FeedForwardNetwork.create(g, config)
@@ -145,8 +145,8 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(5)
-    winner = run_pop(task, 155)[0]
+    task = PurpleTrader(10)
+    winner = run_pop(task, 55)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
