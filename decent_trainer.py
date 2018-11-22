@@ -128,4 +128,9 @@ class DTrader(pkl="local_champ"):
             net = network.create_phenotype_network_nd()
             g.fitness = self.evaluate(net, network, r_start)
 
-    
+    def eval_fitness_single(self, genome, config):
+        cppn = neat.nn.FeedForwardNetwork.create(genome, config)
+        network = ESNetwork(self.subStrate, cppn, self.params)
+        net = network.create_phenotype_network_nd()
+        g.fitness = self.evaluate(net, network, r_start)
+        return g.fitness

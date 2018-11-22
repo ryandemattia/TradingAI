@@ -1,7 +1,7 @@
 from flask import request
 from flask import Flask, url_for
 import random
-import requests
+import urllib.request 
 import sys, os
 from functools import partial
 from itertools import product
@@ -22,11 +22,11 @@ from pureples.es_hyperneat.es_hyperneat import ESNetwork
 
 
 class LiqMaster2000:
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path='champ')
     local_ip = ''
     net_data = {
         'peers': ['localhost:8080, localhost:5050'],
-        'peer_pkls': [],
+        'peer_pkls': {},
         'best_pkl': '',
         'local_pkl': '',
         'global_gens': 0,
@@ -48,21 +48,20 @@ class LiqMaster2000:
             s.close()
         return IP
     
-    @app.route("/best_round_here")
-    def best_local_pkl(request):
-        champ_name = os.listdir(os.path.join(os.path.dirname(__file__), 'champ'))[0]
-        return champ_name
+    @app.route("/best_local")
+    def best_local_pkl(request):c
+        return send_from_directory('champ', 'best_local.pkl')
         
-    @app.route("/best_pickle/<str:pkl_address>")
+    
+    @app.route("/best_pickle/<str:peer_address>/<str:pkl_name")
     def peer_posting_best(request):
-        p_ep = request.pkl_adress + '/' + 'best_round_here'
-    
-    
-    def get_endpoint(self, ep):
-        r = requests.get(url='')
-        print(r.json())
-    #used by get_global_best to retrieve best pkl eheheh
-    def retrieve_pkl(pkl_address, pkl_name):
+        p_ep = peer_address+'/'+pkl_name
+        p_file = peer_address+'_'+pkl_name
+        self.net_data.peer_pkls[peer_address] = pkl_name
+        self.get_peer_pkl(p_ep, p_file)
+        
+    def get_peer_pkl(self, pkl_add, file_p):
+        urllib.request.urlretrieve(pkl_add, 'champ/'+file_p)
         
     
     # Create the population and run the XOR task by providing the above fitness function.
@@ -86,7 +85,7 @@ if __name__ == '__main__':
     cs = LiqMaster2000()
     print(cs.local_ip)
     '''
-    task = PurpleTrader(5)
+    task = PurpleTrader(13)
     winner = run_pop(task, 21)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
