@@ -22,12 +22,12 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 0, 
-            "max_depth": 4, 
-            "variance_threshold": 0.003, 
-            "band_threshold": 0.003, 
-            "iteration_level": 4,
-            "division_threshold": 0.003, 
+    params = {"initial_depth": 3, 
+            "max_depth": 6, 
+            "variance_threshold": 0.03, 
+            "band_threshold": 0.03, 
+            "iteration_level": 3,
+            "division_threshold": 0.01, 
             "max_weight": 5.0, 
             "activation": "tanh"}
 
@@ -51,56 +51,55 @@ class PurpleTrader:
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.currentHists["ZEC"])
         self.but_target = .1
-        self.inputs = (self.hs.hist_shaped[0].shape[1])
-        self.outputs = 1
-        self.num_syms = self.hs.hist_shaped.shape[0]
+        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
+        self.outputs = self.hs.hist_shaped.shape[0]
         sign = 1
-        self.out_shapes.append((0.0, -1.0, 0.0))
-        for x in range(1, self.inputs +1):
-            sign = sign * -1
-            self.in_shapes.append((1-(sign/x), 1.0, 1-(sign/x))
+        for ix in range(1,self.outputs+1):
+            sign = sign *-1
+            self.out_shapes.append((sign/ix, -1.0, -1.0))
+            for ix2 in range(1,(self.inputs//self.outputs)+1):
+                self.in_shapes.append((0.0-sign/ix2, 0.0-(-sign/ix2), 0.0-(sign/ix)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 55
+        self.epoch_len = 89
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
             folio.ledger[k] = 0
 
-    def get_one_epoch_input(self,sym_idx, end_idx):
-        active = []
+    def get_one_epoch_input(self,end_idx):
+        master_active = []
         for x in range(0, self.hd):
-            try:
-                sym_data = self.hs.hist_shaped[sym_idx][end_idx-x]
-                #print(sym_data) 
-                active.append(sym_data.tolist())
-            except:
-                print('error')
+            active = []
+            #print(self.outputs)
+            for y in range(0, self.outputs):
+                try:
+                    sym_data = self.hs.hist_shaped[y][end_idx-x]
+                    #print(len(sym_data)) 
+                    active += sym_data.tolist()
+                except:
+                    print('error')
+            master_active.append(active)
         #print(active)
-        return active
+        return master_active
 
     def evaluate(self, network, es, rand_start, verbose=False):
-        portfolio = CryptoFolio(.05, self.hs.coin_dict)
+        portfolio_start = .05
+        portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
         end_prices = {}
         buys = 0
         sells = 0 
         for z in range(rand_start, rand_start+self.epoch_len):
-            '''
-            if(z == 0):
-                old_idx = 1
-            else:
-                old_idx = z * 5
-            new_idx = (z + 1) * 5
-            '''
-            misses = 0
-            rng = self.num_syms
+            active = self.get_one_epoch_input(z)
+            network.reset()
+            for n in range(1, self.hd+1):
+                out = network.activate(active[self.hd-n])
+            #print(len(out))
+            rng = len(out)
             #rng = iter(shuffle(rng))
             for x in np.random.permutation(rng):
-                sym = self.hs.coin_dict[x]                
-                active = self.get_one_epoch_input(x, z)
-                for n in range(1, self.hd+1):
-                    out = network.activate(active[self.hd-n])
-            #print(len(out))
+                sym = self.hs.coin_dict[x]
                 #print(out[x])
+                #try:
                 if(out[0] < -.5):
                     #print("selling")
                     portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
@@ -110,11 +109,13 @@ class PurpleTrader:
                     portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                     #print("sold ", sym)
                 #skip the hold case because we just dont buy or sell hehe
-                end_prices[sym] = self.hs.hist_shaped[x][self.epoch_len][2]
+                end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
-        network.reset()
-        return result_val[0]
+        ft = result_val[0]
+        if(ft == portfolio_start):
+            ft = portfolio_start/2
+        return ft
 
     def solve(self, network):
         return self.evaluate(network) >= self.highest_returns
@@ -145,8 +146,8 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(13)
-    winner = run_pop(task, 13)[0]
+    task = PurpleTrader(55)
+    winner = run_pop(task, 34)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
