@@ -25,12 +25,12 @@ from pureples.es_hyperneat.es_hyperneat import ESNetwork
 key = ""
 secret = ""
 class LiveTrader:
-    params = {"initial_depth": 0, 
-            "max_depth": 4, 
+    params = {"initial_depth": 3, 
+            "max_depth": 6, 
             "variance_threshold": 0.03, 
-            "band_threshold": 0.3, 
-            "iteration_level": 1,
-            "division_threshold": 0.3, 
+            "band_threshold": 0.03, 
+            "iteration_level": 3,
+            "division_threshold": 0.01, 
             "max_weight": 5.0, 
             "activation": "tanh"}
 
