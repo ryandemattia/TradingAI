@@ -22,12 +22,12 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3, 
+    params = {"initial_depth": 2, 
             "max_depth": 6, 
             "variance_threshold": 0.03, 
-            "band_threshold": 0.03, 
+            "band_threshold": 0.0003, 
             "iteration_level": 3,
-            "division_threshold": 0.01, 
+            "division_threshold": 0.001, 
             "max_weight": 5.0, 
             "activation": "tanh"}
 
@@ -56,9 +56,9 @@ class PurpleTrader:
         sign = 1
         for ix in range(1,self.outputs+1):
             sign = sign *-1
-            self.out_shapes.append((sign/ix, -1.0, -1.0))
+            self.out_shapes.append((0.0-(sign*.001*ix), -1.0, -1.0))
             for ix2 in range(1,(self.inputs//self.outputs)+1):
-                self.in_shapes.append((0.0-sign/ix2, 0.0-(-sign/ix2), 0.0-(sign/ix)))
+                self.in_shapes.append((0.0-(sign*.001*ix2), 0.0-(sign*.001*ix2), 0.0-(-sign*.001*ix)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 89
         
@@ -99,7 +99,7 @@ class PurpleTrader:
             for x in np.random.permutation(rng):
                 sym = self.hs.coin_dict[x]
                 #print(out[x])
-                #try:
+                #try:   
                 if(out[0] < -.5):
                     #print("selling")
                     portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
@@ -127,7 +127,7 @@ class PurpleTrader:
 
             cppn = neat.nn.FeedForwardNetwork.create(g, config)
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd()
+            net = network.create_phenotype_network_nd("current_net.png")
             g.fitness = self.evaluate(net, network, r_start)
         
 

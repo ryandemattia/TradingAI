@@ -2,7 +2,7 @@
 
 [NEAT]
 fitness_criterion     = max
-fitness_threshold     = 10
+fitness_threshold     = 2
 pop_size              = 21
 reset_on_extinction   = True
 
@@ -10,7 +10,7 @@ reset_on_extinction   = True
 [DefaultGenome]
 # node activation options
 activation_default      = tanh
-activation_mutate_rate  = 0.5
+activation_mutate_rate  = 0.55
 activation_options      = gauss sin tanh cube log sigmoid square
 
 # node aggregation options
@@ -21,10 +21,10 @@ aggregation_options     = sum
 # node bias options
 bias_init_mean          = 0.0
 bias_init_stdev         = 1.0
-bias_max_value          = 30.0
-bias_min_value          = -30.0
+bias_max_value          = 34.0
+bias_min_value          = -34.0
 bias_mutate_power       = 0.5
-bias_mutate_rate        = 0.7
+bias_mutate_rate        = 0.89
 bias_replace_rate       = 0.1
 
 # genome compatibility options
@@ -37,7 +37,7 @@ conn_delete_prob        = 0.5
 
 # connection enable options
 enabled_default         = True
-enabled_mutate_rate     = 0.01
+enabled_mutate_rate     = 0.013
 
 feed_forward            = True
 initial_connection      = full

@@ -301,8 +301,8 @@ class PaperTrader:
         network = ESNetwork(sub, self.cppn, self.params)
         net = network.create_phenotype_network()
         net.reset()
-        for n in range(network.activations):
-            out = net.activate(active)
+        for n in range(1, self.hd+1):
+            out = net.activate(active[self.hd-n])
         #print(len(out))
         rng = len(out)
         #rng = iter(shuffle(rng))
