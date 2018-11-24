@@ -85,7 +85,7 @@ class HistWorker:
                     frame['avg_close_3'] = frame['close'].rolling(3).mean()
                     frame['avg_close_13'] = frame['close'].rolling(13).mean()
                     frame['avg_close_34'] = frame['close'].rolling(34).mean()
-                    frame = frame.fillna(0.0)
+                    frame = frame.fillna(value=-99999, inplace=True)
                     print(frame.head())
                     frame.to_csv("./histories/"+coin+"_hist.txt", encoding="utf-8")
                 except:
