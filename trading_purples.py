@@ -4,7 +4,7 @@ import random
 import sys, os
 from functools import partial
 from itertools import product
-
+from pytorch_neat.cppn import create_cppn
 # Libs
 import numpy as np
 from hist_service import HistWorker
@@ -22,12 +22,12 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3, 
+    params = {"initial_depth": 2, 
             "max_depth": 6, 
-            "variance_threshold": 0.0013, 
+            "variance_threshold": 0.013, 
             "band_threshold": 0.034, 
             "iteration_level": 3,
-            "division_threshold": 0.0013, 
+            "division_threshold": 0.013, 
             "max_weight": 5.0, 
             "activation": "tanh"}
 
@@ -42,6 +42,7 @@ class PurpleTrader:
     portfolio_list = []
 
 
+    
     in_shapes = []
     out_shapes = []
     def __init__(self, hist_depth):
@@ -61,6 +62,11 @@ class PurpleTrader:
                 self.in_shapes.append((0.0-(sign*.01*ix2), 0.0+(sign*.01*ix), 0.0+(sign*.01*ix2)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 89
+        self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
+        self.leaf_names = []
+        #num_leafs = 2**(len(self.node_names)-1)//2
+        for l in range(len(self.node_names)):
+            self.leaf_names.append('leaf_'+str(l))
         
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -125,7 +131,7 @@ class PurpleTrader:
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)    
         for idx, g in genomes:
 
-            cppn = neat.nn.FeedForwardNetwork.create(g, config)
+            cppn = create_cppn(g, config, self.leaf_names, self.node_names)
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network_nd("current_net.png")
             g.fitness = self.evaluate(net, network, r_start)
