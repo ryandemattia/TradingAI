@@ -131,7 +131,7 @@ class PurpleTrader:
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)    
         for idx, g in genomes:
 
-            [cppn] = create_cppn(g, config, self.leaf_names, self.node_names)
+            [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network_nd("current_net.png")
             g.fitness = self.evaluate(net, network, r_start)
