@@ -93,9 +93,10 @@ class Node:
             self.activs = self.activate(xs, shape)
         return self.activs
 
-    def __call__(self, **inputs):
+    def __call__(self, inputs={}):
         assert self.leaves is not None
         assert inputs
+        print(inputs)
         shape = list(inputs.values())[0].shape
         self.reset()
         for name in self.leaves.keys():
@@ -264,7 +265,7 @@ def get_coord_inputs(in_coords, out_coords, batch_size=None):
         y_in = in_coords[:, 1].unsqueeze(0).expand(n_out, n_in)
 
     return (x_out, y_out), (x_in, y_in)
-    
+
 def get_coord_inputs(in_coords, out_coords, batch_size=None):
     n_in = len(in_coords)
     n_out = len(out_coords)

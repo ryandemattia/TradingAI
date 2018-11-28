@@ -18,17 +18,17 @@ from pureples.shared.visualize import draw_net
 from pureples.es_hyperneat.es_hyperneat import ESNetwork
 # Local
 class PurpleTrader:
-    
+
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2, 
-            "max_depth": 6, 
-            "variance_threshold": 0.013, 
-            "band_threshold": 0.034, 
+    params = {"initial_depth": 2,
+            "max_depth": 6,
+            "variance_threshold": 0.013,
+            "band_threshold": 0.034,
             "iteration_level": 3,
-            "division_threshold": 0.013, 
-            "max_weight": 5.0, 
+            "division_threshold": 0.013,
+            "max_weight": 5.0,
             "activation": "tanh"}
 
 
@@ -36,13 +36,13 @@ class PurpleTrader:
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
                                 neat.species.DefaultSpeciesSet, neat.stagnation.DefaultStagnation,
                                 'config_trader')
-                                
+
     start_idx = 0
     highest_returns = 0
     portfolio_list = []
 
 
-    
+
     in_shapes = []
     out_shapes = []
     def __init__(self, hist_depth):
@@ -62,12 +62,13 @@ class PurpleTrader:
                 self.in_shapes.append((0.0-(sign*.01*ix2), 0.0+(sign*.01*ix), 0.0+(sign*.01*ix2)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 89
-        self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
+        #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
         #num_leafs = 2**(len(self.node_names)-1)//2
-        for l in range(len(self.node_names)):
-            self.leaf_names.append('leaf_'+str(l))
-        
+        for l in range(len(self.in_shapes[0])):
+            self.leaf_names.append('leaf_one_'+str(l))
+            self.leaf_names.append('leaf_two_'+str(l))
+        self.leaf_names.append('bias')
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
             folio.ledger[k] = 0
@@ -80,7 +81,7 @@ class PurpleTrader:
             for y in range(0, self.outputs):
                 try:
                     sym_data = self.hs.hist_shaped[y][end_idx-x]
-                    #print(len(sym_data)) 
+                    #print(len(sym_data))
                     active += sym_data.tolist()
                 except:
                     print('error')
@@ -93,7 +94,7 @@ class PurpleTrader:
         portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
         end_prices = {}
         buys = 0
-        sells = 0 
+        sells = 0
         for z in range(rand_start, rand_start+self.epoch_len):
             active = self.get_one_epoch_input(z)
             network.reset()
@@ -105,7 +106,7 @@ class PurpleTrader:
             for x in np.random.permutation(rng):
                 sym = self.hs.coin_dict[x]
                 #print(out[x])
-                #try:   
+                #try:
                 if(out[0] < -.5):
                     #print("selling")
                     portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
@@ -125,17 +126,16 @@ class PurpleTrader:
 
     def solve(self, network):
         return self.evaluate(network) >= self.highest_returns
-        
+
 
     def eval_fitness(self, genomes, config):
-        r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)    
+        r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         for idx, g in genomes:
-
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network_nd("current_net.png")
             g.fitness = self.evaluate(net, network, r_start)
-        
+
 
 
 # Create the population and run the XOR task by providing the above fitness function.
@@ -172,4 +172,3 @@ if __name__ == '__main__':
     for x in range(len(task.hs.hist_shaped[0])):
         print(task.hs.hist_shaped[1][x][3],task.hs.hist_shaped[0][x][3])
     '''
-    
