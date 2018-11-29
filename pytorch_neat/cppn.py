@@ -96,12 +96,8 @@ class Node:
     def __call__(self, inputs={}):
         assert self.leaves is not None
         assert inputs
-        print(inputs)
-<<<<<<< HEAD
-        shape = inputs[0].shape
-=======
+        #print(inputs)
         shape = list(inputs.values())[0].shape
->>>>>>> ece8165b2b1607090a5526fa0381d927b1163431
         self.reset()
         for name in self.leaves.keys():
             assert (
@@ -109,7 +105,7 @@ class Node:
             ), "Wrong activs shape for leaf {}, {} != {}".format(
                 name, inputs[name].shape, shape
             )
-            self.leaves[name].set_activs(inputs[name])
+            self.leaves[name].set_activs(torch.Tensor(inputs[name]))
         return self.get_activs(shape)
 
     def _prereset(self):

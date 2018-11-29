@@ -9,9 +9,9 @@ reset_on_extinction   = True
 
 [DefaultGenome]
 # node activation options
-activation_default      = tanh
-activation_mutate_rate  = 0.55
-activation_options      = gauss sin tanh cube log sigmoid square
+activation_default      = sin
+activation_mutate_rate  = 0.89
+activation_options      = sin tanh sigmoid gauss
 
 # node aggregation options
 aggregation_default     = sum
@@ -19,11 +19,11 @@ aggregation_mutate_rate = 0.0
 aggregation_options     = sum
 
 # node bias options
-bias_init_mean          = 0.0
+bias_init_mean          = 0.1
 bias_init_stdev         = 1.0
 bias_max_value          = 34.0
 bias_min_value          = -34.0
-bias_mutate_power       = 0.5
+bias_mutate_power       = 0.55
 bias_mutate_rate        = 0.89
 bias_replace_rate       = 0.2
 
@@ -75,8 +75,8 @@ compatibility_threshold = 3.0
 [DefaultStagnation]
 species_fitness_func = max
 max_stagnation       = 1
-species_elitism      = 5
+species_elitism      = 3
 
 [DefaultReproduction]
-elitism            = 13
+elitism            = 5
 survival_threshold = .051
