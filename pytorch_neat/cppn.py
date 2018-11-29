@@ -96,7 +96,8 @@ class Node:
     def __call__(self, **inputs):
         assert self.leaves is not None
         assert inputs
-        shape = list(inputs.values())[0].shape
+        print(inputs)
+        shape = inputs[0].shape
         self.reset()
         for name in self.leaves.keys():
             assert (
