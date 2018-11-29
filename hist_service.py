@@ -4,16 +4,16 @@ import pandas as pd
 import requests
 import numpy as np
 from poloniex import Poloniex
-from datetime import date, timedelta, datetime 
+from datetime import date, timedelta, datetime
 import os
 #from ephemGravityWrapper import gravity as gbaby
 '''
-As can be expected by this point, you will notice that 
+As can be expected by this point, you will notice that
 nothing done here has been done in the best possible way
 so feel STRONGLY ENCOURAGED TO FORK AND FIX/UPDATE/REFACTOR,
-also for the sake of not running computations for computations 
+also for the sake of not running computations for computations
 sake instead of calculating the actual gravitational pull we
-will just tack on a column of moon distances since its porportional 
+will just tack on a column of moon distances since its porportional
 to the gravitational pull
 and occurs at the same intervals
 '''
@@ -31,15 +31,15 @@ class HistWorker:
         self.look_back = 666
         self.hist_full_size = 666*12
         return
-    
+
     def get_hist_files(self):
         histFiles = os.listdir(os.path.join(os.path.dirname(__file__), 'histories'))
         return histFiles
 
     def get_data_frame(self, fname):
-        frame = pd.read_csv('./histories/'+fname) # timestamps will but used as index    
+        frame = pd.read_csv('./histories/'+fname) # timestamps will but used as index
         return frame
-        
+
     def get_file_symbol(self, f):
         f = f.split("_", 2)
         return f[1]
@@ -53,7 +53,7 @@ class HistWorker:
             new_date = datetime.utcfromtimestamp((self.currentHists['DASH']['date'][snoz])).strftime('%Y-%m-%d  %H:%M:%S')
             dates.append(self.currentHists['DASH']['date'][snoz])
             md.append(gbaby.planet_dist(new_date, 'moon'))
-        
+
         data = {'date': dates, 'moon_dist': md}
         data = pd.DataFrame.from_dict(data)
         data.to_csv("moon_dists.txt", encoding="utf-8")
@@ -71,7 +71,7 @@ class HistWorker:
         polo = Poloniex()
         coins = polo.returnTicker()
         tickLen = '7200'
-        start = datetime.today() - timedelta(self.look_back) 
+        start = datetime.today() - timedelta(self.look_back)
         start = str(int(start.timestamp()))
         for coin in coins:
             if coin[:3] == 'BTC':
@@ -92,7 +92,7 @@ class HistWorker:
                     print("error reading json")
         #self.get_data_for_astro()
 
-    
+
     def combine_frames(self):
         length = 7992
         fileNames = self.get_hist_files()
@@ -105,7 +105,7 @@ class HistWorker:
             df = df.drop("Unnamed: 0", 1)
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             as_array = np.array(df)
-            print(len(as_array))
+            #print(len(as_array))
             if(len(as_array) == length):
                 self.currentHists[col_prefix] = df
                 self.hist_shaped[coin_and_hist_index] = as_array
