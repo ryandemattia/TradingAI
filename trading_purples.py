@@ -15,7 +15,7 @@ import neat.nn
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
-from pureples.es_hyperneat.es_hyperneat import ESNetwork
+from pureples.es_hyperneat.es_hyperneat_torch import ESNetwork
 # Local
 class PurpleTrader:
 
@@ -26,7 +26,7 @@ class PurpleTrader:
             "max_depth": 6,
             "variance_threshold": 0.013,
             "band_threshold": 0.013,
-            "iteration_level": 4,
+            "iteration_level": 3,
             "division_threshold": 0.013,
             "max_weight": 5.0,
             "activation": "tanh"}
@@ -61,7 +61,7 @@ class PurpleTrader:
             for ix2 in range(1,(self.inputs//self.outputs)+1):
                 self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix), 0.0-(sign*.01*ix2)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 36
+        self.epoch_len = 55
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
         #num_leafs = 2**(len(self.node_names)-1)//2
@@ -131,9 +131,9 @@ class PurpleTrader:
     def eval_fitness(self, genomes, config):
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         for idx, g in genomes:
-            cppn = neat.nn.FeedForwardNetwork.create(g, config)
+            [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd()
+            net = network.create_phenotype_network_nd("current_net.png")
             g.fitness = self.evaluate(net, network, r_start)
 
 
