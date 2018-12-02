@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 import numpy as np
 from poloniex import Poloniex
+from binance.client import Client
 from datetime import date, timedelta, datetime
 import os
 #from ephemGravityWrapper import gravity as gbaby
@@ -41,8 +42,8 @@ class HistWorker:
         return frame
 
     def get_file_symbol(self, f):
-        f = f.split("_", 2)
-        return f[1]
+        f = f[:-3]
+        return f
     '''
     def get_data_for_astro(self):
         data = {}
@@ -59,13 +60,16 @@ class HistWorker:
         data.to_csv("moon_dists.txt", encoding="utf-8")
         #data = data.join(self.currentHists['DASH'].set_index('date'), on='date', how="left").drop('Unnamed: 0', 1)
         return data.head()
-    '''
+    
     def read_in_moon_data(self, df):
         moon = pd.read_csv('./moon_dists.txt')
         moon.set_index("date")
         moon.drop("Unnamed: 0", 1)
         df = df.drop('Unnamed: 0', 1).set_index("date")
         return moon.join(df, on="date")
+    '''
+
+
 
     def pull_polo(self):
         polo = Poloniex()
@@ -94,19 +98,21 @@ class HistWorker:
 
 
     def combine_frames(self):
-        length = 7992
+        length = 350000
         fileNames = self.get_hist_files()
         coin_and_hist_index = 0
-        for x in range(0,len(fileNames)):
-            df = self.get_data_frame(fileNames[x])
+        for x in range(0,len(fileNames[:25])):
+            df = self.get_data_frame(fileNames[x])[::-1]
             col_prefix = self.get_file_symbol(fileNames[x])
             #df.drop("Unnamed: 0", 1)
             #df = self.read_in_moon_data(df)
-            df = df.drop("Unnamed: 0", 1)
+            df = df.drop("Date", 1)
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             as_array = np.array(df)
-            #print(len(as_array))
-            if(len(as_array) == length):
+            len_array = len(as_array)
+            if(len_array >= length):
+                as_array=as_array[:length]
+                #print(as_array[0])
                 self.currentHists[col_prefix] = df
                 self.hist_shaped[coin_and_hist_index] = as_array
                 self.coin_dict[coin_and_hist_index] = col_prefix
@@ -120,7 +126,3 @@ class HistWorker:
         '''
 
 
-'''
-hs = HistWorker()
-hs.pull_polo()
-'''
