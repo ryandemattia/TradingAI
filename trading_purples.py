@@ -158,7 +158,7 @@ if __name__ == '__main__':
 
     # Verify network output against training data.
     print('\nOutput:')
-    cppn = neat.nn.FeedForwardNetwork.create(winner, task.config)
+    [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
     network = ESNetwork(task.subStrate, cppn, task.params)
     with open('es_trade_god_cppn_3d.pkl', 'wb') as output:
         pickle.dump(cppn, output)
