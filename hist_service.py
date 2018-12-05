@@ -43,6 +43,10 @@ class HistWorker:
     def get_file_symbol(self, f):
         f = f.split("_", 2)
         return f[1]
+
+    def get_stock_syms(self, f):
+        syms = pd.read_csv('./constituents_csv.csv')
+        return syms
     '''
     def get_data_for_astro(self):
         data = {}
@@ -59,14 +63,14 @@ class HistWorker:
         data.to_csv("moon_dists.txt", encoding="utf-8")
         #data = data.join(self.currentHists['DASH'].set_index('date'), on='date', how="left").drop('Unnamed: 0', 1)
         return data.head()
-    '''
+
     def read_in_moon_data(self, df):
         moon = pd.read_csv('./moon_dists.txt')
         moon.set_index("date")
         moon.drop("Unnamed: 0", 1)
         df = df.drop('Unnamed: 0', 1).set_index("date")
         return moon.join(df, on="date")
-
+    '''
     def pull_polo(self):
         polo = Poloniex()
         coins = polo.returnTicker()
