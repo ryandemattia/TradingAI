@@ -32,7 +32,7 @@ class LiqMaster2000:
         'global_gens': 0,
         'local_gens': 0,
     }
-    
+    peer_data = {}
     config = {}
     
     
@@ -56,6 +56,7 @@ class LiqMaster2000:
     def add_new_peer(request):
         self.net_data.peers.append(peer_address)
         return self.net_data
+        
     @app.route("/best_pickle/<str:peer_address>/<str:pkl_name")
     def peer_posting_best(request):
         p_ep = peer_address+'/'+pkl_name
@@ -64,8 +65,11 @@ class LiqMaster2000:
         self.get_peer_pkl(p_ep, p_file)
         
     def get_peer_pkl(self, pkl_add, file_p):
-        urllib.request.urlretrieve(pkl_add, 'champ/'+file_p)
-        
+        try:
+            p_pickle = urllib.request.urlretrieve(pkl_add, 'champ/'+file_p)
+        except:
+            print('error retrieving peers pickle')
+        return p_pickle
     
     # Create the population and run the XOR task by providing the above fitness function.
     def run_pop(self, task, gens):
@@ -82,6 +86,21 @@ class LiqMaster2000:
     def __init__(self, seed_peer=''):
         self.local_ip = self.get_ip()
         return
+    
+    def peer_v_peer(self, g1, g2):
+        cppn = neat.nn.FeedForwardNetwork.create(g1, config)
+        network = ESNetwork(self.subStrate, cppn, self.params)
+        net = network.create_phenotype_network_nd()
+        g1.fitness = self.evaluate(net, network, r_start)
+        cppn2 = neat.nn.FeedForwardNetwork.create(g2, config)
+        network2 = ESNetwork(self.subStrate, cppn, self.params)
+        net2 = network.create_phenotype_network_nd()
+        g2.fitness2 = self.evaluate(net, network, r_start)
+        if g1 > g2:
+            return g1
+        else:
+            return g2
+            
 # If run as script.
 
 if __name__ == '__main__':

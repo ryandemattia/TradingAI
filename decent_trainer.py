@@ -122,7 +122,6 @@ class DTrader(pkl="local_champ"):
     def eval_fitness(self, genomes, config):
         r_start = randint(0, self.hs.hist_full_size - self.epoch_len)    
         for idx, g in genomes:
-
             cppn = neat.nn.FeedForwardNetwork.create(g, config)
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network_nd()
