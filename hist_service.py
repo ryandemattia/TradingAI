@@ -44,7 +44,7 @@ class HistWorker:
         f = f.split("_", 2)
         return f[1]
 
-    def get_stock_syms(self, f):
+    def get_stock_syms(self):
         syms = pd.read_csv('./constituents_csv.csv')
         return syms
     '''
@@ -124,7 +124,7 @@ class HistWorker:
         '''
 
 
-'''
+
 hs = HistWorker()
-hs.pull_polo()
-'''
+print(hs.get_stock_syms()['Sector']['Industrials'])
+
