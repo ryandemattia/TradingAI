@@ -87,6 +87,9 @@ class LiqMaster2000:
         self.local_ip = self.get_ip()
         return
     
+    def give_mad_props(self, to_whom):
+        return
+    
     def peer_v_peer(self, g1, g2):
         cppn = neat.nn.FeedForwardNetwork.create(g1, config)
         network = ESNetwork(self.subStrate, cppn, self.params)
