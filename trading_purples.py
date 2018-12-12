@@ -155,9 +155,11 @@ def run_pop(task, gens):
 
     winner = pop.run(task.eval_fitness, gens)
     print("es trade god summoned")
+    '''
     [cppn] = create_cppn(winner, task.config, task.leaf_names, ['cppn_out'])
     with open('last_winner.pkl', 'wb') as output:
         pickle.dump(cppn, output)
+    '''
     return winner, stats
 
 
