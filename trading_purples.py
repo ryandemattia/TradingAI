@@ -61,7 +61,7 @@ class PurpleTrader:
             for ix2 in range(1,(self.inputs//self.outputs)+1):
                 self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix), 0.0-(sign*.01*ix2)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 55
+        self.epoch_len = 89
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
         #num_leafs = 2**(len(self.node_names)-1)//2
@@ -121,19 +121,27 @@ class PurpleTrader:
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
         ft = result_val[0]
         if(ft == portfolio_start):
-            ft = portfolio_start/2
+            ft = portfolio_start * .75
         return ft
 
     def solve(self, network):
         return self.evaluate(network) >= self.highest_returns
 
+    def trial_run(self):
+        r_start = self.hd
+        file = open("es_trade_god_cppn_3d.pkl",'rb')
+        [cppn] = pickle.load(file)
+        network = ESNetwork(self.subStrate, cppn, self.params)
+        net = network.create_phenotype_network_nd()
+        fitness = self.evaluate(net, network, r_start)
+        return fitness
 
     def eval_fitness(self, genomes, config):
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd("current_net.png")
+            net = network.create_phenotype_network_nd()
             g.fitness = self.evaluate(net, network, r_start)
 
 
@@ -152,13 +160,14 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(55)
+    task = PurpleTrader(89)
+    #print(task.trial_run())
     winner = run_pop(task, 10)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
     print('\nOutput:')
-    cppn = neat.nn.FeedForwardNetwork.create(winner, task.config)
+    [cppn] = create_cppn(winner, task.config, task.leaf_names, ['cppn_out'])
     network = ESNetwork(task.subStrate, cppn, task.params)
     with open('es_trade_god_cppn_3d.pkl', 'wb') as output:
         pickle.dump(cppn, output)
@@ -166,7 +175,8 @@ if __name__ == '__main__':
     winner_net = network.create_phenotype_network_nd('dabestest.png')  # This will also draw winner_net.
 
     # Save CPPN if wished reused and draw it to file.
-    #draw_net(cppn, filename="es_trade_god")
+    draw_net(cppn, filename="es_trade_god")
+
 
     '''
     for x in range(len(task.hs.hist_shaped[0])):
