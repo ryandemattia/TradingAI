@@ -141,7 +141,7 @@ class PurpleTrader:
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd()
+            net = network.create_phenotype_network_nd("current_net.png")
             g.fitness = self.evaluate(net, network, r_start)
 
 
@@ -155,6 +155,9 @@ def run_pop(task, gens):
 
     winner = pop.run(task.eval_fitness, gens)
     print("es trade god summoned")
+    [cppn] = create_cppn(winner, task.config, task.leaf_names, ['cppn_out'])
+    with open('last_winner.pkl', 'wb') as output:
+        pickle.dump(cppn, output)
     return winner, stats
 
 

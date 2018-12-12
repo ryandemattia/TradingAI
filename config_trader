@@ -3,11 +3,7 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 2
-<<<<<<< HEAD
 pop_size              = 233
-=======
-pop_size              = 34
->>>>>>> b01bb2f9b87695197a0a1dcfe9872d6f58767faa
 reset_on_extinction   = True
 
 
