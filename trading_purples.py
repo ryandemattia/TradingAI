@@ -22,12 +22,12 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
-            "max_depth": 6,
-            "variance_threshold": 0.013,
-            "band_threshold": 0.013,
+    params = {"initial_depth": 2,
+            "max_depth": 4,
+            "variance_threshold": 0.000013,
+            "band_threshold": 0.000013,
             "iteration_level": 3,
-            "division_threshold": 0.013,
+            "division_threshold": 0.000013,
             "max_weight": 5.0,
             "activation": "tanh"}
 
@@ -141,7 +141,7 @@ class PurpleTrader:
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd()
+            net = network.create_phenotype_network_nd('current_net.png')
             g.fitness = self.evaluate(net, network, r_start)
 
 
@@ -162,7 +162,7 @@ def run_pop(task, gens):
 if __name__ == '__main__':
     task = PurpleTrader(89)
     #print(task.trial_run())
-    winner = run_pop(task, 10)[0]
+    winner = run_pop(task, 5)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     [cppn] = create_cppn(winner, task.config, task.leaf_names, ['cppn_out'])
     network = ESNetwork(task.subStrate, cppn, task.params)
     with open('es_trade_god_cppn_3d.pkl', 'wb') as output:
-        pickle.dump(cppn, output)
+        pickle.dump(winner, output)
     #draw_net(cppn, filename="es_trade_god")
     winner_net = network.create_phenotype_network_nd('dabestest.png')  # This will also draw winner_net.
 

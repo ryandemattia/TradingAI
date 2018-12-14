@@ -14,24 +14,25 @@ from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 from random import randint, shuffle
 import requests
+from pytorch_neat.cppn import create_cppn
 # Local
 import neat.nn
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
-from pureples.es_hyperneat.es_hyperneat import ESNetwork
+from pureples.es_hyperneat.es_hyperneat_torch import ESNetwork
 #polo = Poloniex('key', 'secret')
 
 key = ""
 secret = ""
 class LiveTrader:
-    params = {"initial_depth": 3, 
-            "max_depth": 6, 
-            "variance_threshold": 0.03, 
-            "band_threshold": 0.03, 
+    params = {"initial_depth": 3,
+            "max_depth": 6,
+            "variance_threshold": 0.013,
+            "band_threshold": 0.013,
             "iteration_level": 3,
-            "division_threshold": 0.01, 
-            "max_weight": 5.0, 
+            "division_threshold": 0.013,
+            "max_weight": 5.0,
             "activation": "tanh"}
 
 
@@ -201,13 +202,13 @@ class LiveTrader:
         self.poloTrader()
 
 class PaperTrader:
-    params = {"initial_depth": 0, 
-            "max_depth": 4, 
-            "variance_threshold": 0.03, 
-            "band_threshold": 0.3, 
-            "iteration_level": 1,
-            "division_threshold": 0.3, 
-            "max_weight": 5.0, 
+    params = {"initial_depth": 3,
+            "max_depth": 6,
+            "variance_threshold": 0.013,
+            "band_threshold": 0.013,
+            "iteration_level": 3,
+            "division_threshold": 0.013,
+            "max_weight": 5.0,
             "activation": "tanh"}
 
 
@@ -215,22 +216,29 @@ class PaperTrader:
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
                                 neat.species.DefaultSpeciesSet, neat.stagnation.DefaultStagnation,
                                 'config_trader')
-    def __init__(self, ticker_len, start_amount):
+    def __init__(self, ticker_len, start_amount, histdepth):
         self.polo = Poloniex()
         self.currentHists = {}
         self.hist_shaped = {}
         self.coin_dict = {}
+        self.hist_depth = histdepth
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*24))
         self.start_amount = start_amount
-        file = open("es_trade_god_cppn.pkl",'rb')
-        self.cppn = pickle.load(file)
-        file.close()
         self.pull_polo()
         self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1]-1)
         self.outputs = self.hist_shaped.shape[0]
+        self.make_shapes()
         self.multiplier = self.inputs/self.outputs
         self.folio = CryptoFolio(start_amount, self.coin_dict)
+        file = open("es_trade_god_cppn_3d.pkl",'rb')
+        g = pickle.load(file)
+        file.close()
+        self.leaf_names = []
+        for l in range(len(self.in_shapes[0])):
+            self.leaf_names.append('leaf_one_'+str(l))
+            self.leaf_names.append('leaf_two_'+str(l))
+        self.cppn = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
         
     def make_shapes(self):
         self.in_shapes = []
@@ -269,6 +277,7 @@ class PaperTrader:
         self.hist_shaped = pd.Series(self.hist_shaped)
         self.end_idx = len(self.hist_shaped[0])-1
 
+
     def get_current_balance(self):
         self.pull_polo()
         c_prices = {}
@@ -277,32 +286,31 @@ class PaperTrader:
                 c_prices[s] = self.currentHists[s]['close'][len(self.currentHists[s]['close'])-1]
         return self.folio.get_total_btc_value_no_sell(c_prices)
         
-    def get_one_bar_input_2d(self):
-        active = []
-        misses = 0
-        for x in range(0, self.outputs):
-            try:
-                sym_data = self.hist_shaped[x][self.end_idx] 
-                for i in range(len(sym_data)):
-                    if (i != 1):
-                        active.append(sym_data[i].tolist())
-            except:
-                self.outputs -= 1
-                self.inputs -= self.multiplier
-                print('error')
+    def get_one_bar_input_2d(self,end_idx=10):
+        master_active = []
+        for x in range(0, self.hist_depth):
+            active = []
+            #print(self.outputs)
+            for y in range(0, self.outputs):
+                try:
+                    sym_data = self.hist_shaped[y][self.hist_depth-x]
+                    #print(len(sym_data))
+                    active += sym_data.tolist()
+                except:
+                    print('error')
+            master_active.append(active)
         #print(active)
-        self.make_shapes()
-        return active
+        return master_active
         
     def poloTrader(self):
         end_prices = {}
         active = self.get_one_bar_input_2d()
         sub = Substrate(self.in_shapes, self.out_shapes)
         network = ESNetwork(sub, self.cppn, self.params)
-        net = network.create_phenotype_network()
+        net = network.create_phenotype_network_nd('paper_net.png')
         net.reset()
-        for n in range(1, self.hd+1):
-            out = net.activate(active[self.hd-n])
+        for n in range(1, self.hist_depth+1):
+            out = net.activate(active[self.hist_depth-n])
         #print(len(out))
         rng = len(out)
         #rng = iter(shuffle(rng))
@@ -338,6 +346,6 @@ class PaperTrader:
                         
 
 
-live = LiveTrader(7200, .1)
+live = PaperTrader(7200, 1.0, 10)
 live.poloTrader()
 
