@@ -202,15 +202,14 @@ class LiveTrader:
         self.poloTrader()
 
 class PaperTrader:
-    params = {"initial_depth": 3,
-            "max_depth": 6,
-            "variance_threshold": 0.013,
-            "band_threshold": 0.013,
+    params = {"initial_depth": 2,
+            "max_depth": 4,
+            "variance_threshold": 0.0000013,
+            "band_threshold": 0.0000013,
             "iteration_level": 3,
-            "division_threshold": 0.013,
+            "division_threshold": 0.0000013,
             "max_weight": 5.0,
             "activation": "tanh"}
-
 
     # Config for CPPN.
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
@@ -229,15 +228,17 @@ class PaperTrader:
         self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1]-1)
         self.outputs = self.hist_shaped.shape[0]
         self.make_shapes()
-        self.multiplier = self.inputs/self.outputs
         self.folio = CryptoFolio(start_amount, self.coin_dict)
-        file = open("es_trade_god_cppn_3d.pkl",'rb')
-        g = pickle.load(file)
-        file.close()
         self.leaf_names = []
         for l in range(len(self.in_shapes[0])):
             self.leaf_names.append('leaf_one_'+str(l))
             self.leaf_names.append('leaf_two_'+str(l))
+        
+
+    def load_net(self):
+        file = open("es_trade_god_cppn_3d.pkl",'rb')
+        g = pickle.load(file)
+        file.close()
         self.cppn = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
         
     def make_shapes(self):

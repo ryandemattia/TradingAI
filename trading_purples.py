@@ -138,14 +138,19 @@ class PurpleTrader:
 
     def eval_fitness(self, genomes, config):
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
+        fitter = genomes[0]
+        fitter_val = 0.0 
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd()
+            net = network.create_phenotype_network_nd('current_net.png')
             g.fitness = self.evaluate(net, network, r_start)
-
-
-
+            if(g.fitness > fitter_val):
+                fitter = g
+                fitter_val = g.fitness
+        with open('perpetual_champion.pkl', 'wb') as output:
+            pickle.dump(winner, output)
+        print("latest_saved")
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
     pop = neat.population.Population(task.config)

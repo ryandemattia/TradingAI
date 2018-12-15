@@ -3,7 +3,7 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 2
-pop_size              = 144
+pop_size              = 13
 reset_on_extinction   = True
 
 
@@ -75,8 +75,8 @@ compatibility_threshold = 3.0
 [DefaultStagnation]
 species_fitness_func = max
 max_stagnation       = 1
-species_elitism      = 5
+species_elitism      = 2
 
 [DefaultReproduction]
-elitism            = 13
+elitism            = 5
 survival_threshold = .051
