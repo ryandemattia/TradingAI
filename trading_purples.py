@@ -22,7 +22,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 4,
+    params = {"initial_depth": 3,
             "max_depth": 4,
             "variance_threshold": 0.0000013,
             "band_threshold": 0.0000013,
