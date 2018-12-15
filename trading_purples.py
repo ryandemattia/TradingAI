@@ -22,7 +22,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2,
+    params = {"initial_depth": 4,
             "max_depth": 4,
             "variance_threshold": 0.0000013,
             "band_threshold": 0.0000013,
@@ -149,7 +149,7 @@ class PurpleTrader:
                 fitter = g
                 fitter_val = g.fitness
         with open('perpetual_champion.pkl', 'wb') as output:
-            pickle.dump(winner, output)
+            pickle.dump(fitter, output)
         print("latest_saved")
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):

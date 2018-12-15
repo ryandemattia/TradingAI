@@ -236,11 +236,11 @@ class PaperTrader:
         
 
     def load_net(self):
-        file = open("es_trade_god_cppn_3d.pkl",'rb')
+        file = open("perpetual_champion.pkl",'rb')
         g = pickle.load(file)
         file.close()
         self.cppn = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
-        
+
     def make_shapes(self):
         self.in_shapes = []
         self.out_shapes = []
