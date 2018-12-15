@@ -24,10 +24,10 @@ class PurpleTrader:
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 2,
             "max_depth": 4,
-            "variance_threshold": 0.000013,
-            "band_threshold": 0.000013,
+            "variance_threshold": 0.0000013,
+            "band_threshold": 0.0000013,
             "iteration_level": 3,
-            "division_threshold": 0.000013,
+            "division_threshold": 0.0000013,
             "max_weight": 5.0,
             "activation": "tanh"}
 
@@ -59,7 +59,7 @@ class PurpleTrader:
             sign = sign *-1
             self.out_shapes.append((0.0-(sign*.005*ix), -1.0, -1.0))
             for ix2 in range(1,(self.inputs//self.outputs)+1):
-                self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix), 0.0-(sign*.01*ix2)))
+                self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 89
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
@@ -141,7 +141,7 @@ class PurpleTrader:
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd('current_net.png')
+            net = network.create_phenotype_network_nd()
             g.fitness = self.evaluate(net, network, r_start)
 
 
