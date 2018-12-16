@@ -44,6 +44,11 @@ class HistWorker:
         frame = pd.read_csv('./histories/'+fname) # timestamps will but used as index
         return frame
 
+    def get_live_data_frame(self, fname):
+        frame = pd.read_csv('./paper/'+fname)
+        return frame
+
+
     def get_file_symbol(self, f):
         f = f.split("_", 2)
         return f[1]
@@ -150,7 +155,7 @@ class HistWorker:
         fileNames = self.get_live_files()
         coin_and_hist_index = 0
         for x in range(0,len(fileNames)):
-            df = self.get_data_frame(fileNames[x])
+            df = self.get_live_data_frame(fileNames[x])
             col_prefix = self.get_file_symbol(fileNames[x])
             #df.drop("Unnamed: 0", 1)
             #df = self.read_in_moon_data(df)
@@ -158,11 +163,10 @@ class HistWorker:
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             as_array = np.array(df)
             #print(len(as_array))
-            if(len(as_array) == length):
-                self.currentHists[col_prefix] = df
-                self.hist_shaped[coin_and_hist_index] = as_array
-                self.coin_dict[coin_and_hist_index] = col_prefix
-                coin_and_hist_index += 1
+            self.currentHists[col_prefix] = df
+            self.hist_shaped[coin_and_hist_index] = as_array
+            self.coin_dict[coin_and_hist_index] = col_prefix
+            coin_and_hist_index += 1
         self.hist_shaped = pd.Series(self.hist_shaped)
         '''
         main = df_list[0]
@@ -173,3 +177,7 @@ class HistWorker:
 
 
 
+hs = HistWorker()
+hs.combine_live_frames()
+
+print(hs.currentHists['LTC']['date'][0], hs.currentHists['LTC']['date'][len(hs.currentHists['LTC']['date'])-1])

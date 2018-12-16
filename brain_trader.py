@@ -213,7 +213,7 @@ class PaperTrader:
 
     def refresh_data(self):
         self.hs.pull_polo_live(21)
-        self.hs.combine_frames()
+        self.hs.combine_live_frames()
 
     def load_net(self):
         file = open("perpetual_champion.pkl",'rb')
@@ -239,7 +239,7 @@ class PaperTrader:
         return self.tickers[coin]['last']
 
     def get_current_balance(self):
-        self.refresh_data()
+        #self.refresh_data()
         c_prices = {}
         for s in self.folio.ledger.keys():
             if s != 'BTC':
@@ -276,17 +276,14 @@ class PaperTrader:
         for x in np.random.permutation(rng):
             sym = self.hs.coin_dict[x]
             #print(out[x])
-            try:
-                if(out[x] < -.5):
-                    p = self.get_price(sym)
-                    print("selling: ", sym)
-                    self.folio.sell_coin(sym, p)
-                elif(out[x] > .5):
-                    p = self.get_price(sym)
-                    print("buying: ", sym)
-                    self.folio.buy_coin(sym, p)
-            except:
-                print('error', sym)
+            if(out[x] < -.5):
+                p = self.get_price('BTC_'+sym)
+                print("selling: ", sym)
+                self.folio.sell_coin(sym, p)
+            elif(out[x] > .5):
+                p = self.get_price('BTC_'+sym)
+                print("buying: ", sym)
+                self.folio.buy_coin(sym, p)
             #skip the hold case because we just dont buy or sell hehe
             end_prices[sym] = self.hs.hist_shaped[x][len(self.hs.hist_shaped[x])-1][2]
         
@@ -296,13 +293,12 @@ class PaperTrader:
             return
         else:
             print(self.get_current_balance())
-            for t in range(3):
-                time.sleep(self.ticker_len/4)
+            for t in range(2):
+                self.refresh_data
                 p_vals = self.get_current_balance()
                 print("current value: ", p_vals[0], "current btc holdings: ", p_vals[1])
+                time.sleep(self.ticker_len/2)
                 #print(self.folio.ledger)
-        time.sleep(self.ticker_len/4)
-        self.refresh_data()
         self.poloTrader()
                         
 
