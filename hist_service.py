@@ -36,6 +36,10 @@ class HistWorker:
         histFiles = os.listdir(os.path.join(os.path.dirname(__file__), 'histories'))
         return histFiles
 
+    def get_live_files(self):
+        histFiles = os.listdir(os.path.join(os.path.dirname(__file__), 'paper'))
+        return histFiles
+
     def get_data_frame(self, fname):
         frame = pd.read_csv('./histories/'+fname) # timestamps will but used as index
         return frame
@@ -66,6 +70,31 @@ class HistWorker:
         moon.drop("Unnamed: 0", 1)
         df = df.drop('Unnamed: 0', 1).set_index("date")
         return moon.join(df, on="date")
+
+    def pull_polo_live(self, lb):
+        polo = Poloniex()
+        coins = polo.returnTicker()
+        tickLen = '7200'
+        start = datetime.today() - timedelta(lb)
+        start = str(int(start.timestamp()))
+        for coin in coins:
+            if coin[:3] == 'BTC':
+                hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
+                try:
+                    h_frame = pd.DataFrame(hist.json())
+                    frame = h_frame.copy()
+                    frame['avg_vol_3'] = frame['volume'].rolling(3).mean()
+                    frame['avg_vol_13'] = frame['volume'].rolling(13).mean()
+                    frame['avg_vol_34'] = frame['volume'].rolling(34).mean()
+                    frame['avg_close_3'] = frame['close'].rolling(3).mean()
+                    frame['avg_close_13'] = frame['close'].rolling(13).mean()
+                    frame['avg_close_34'] = frame['close'].rolling(34).mean()
+                    frame = frame.fillna(value=-99999, inplace=True)
+                    print(frame.head())
+                    frame.to_csv("./histories/"+coin+"_hist.txt", encoding="utf-8")
+                except:
+                    print("error reading json")
+
 
     def pull_polo(self):
         polo = Poloniex()
@@ -119,6 +148,31 @@ class HistWorker:
         return main
         '''
 
+    def combine_live_frames(self):
+        length = 7992
+        fileNames = self.get_live_files()
+        coin_and_hist_index = 0
+        for x in range(0,len(fileNames)):
+            df = self.get_data_frame(fileNames[x])
+            col_prefix = self.get_file_symbol(fileNames[x])
+            #df.drop("Unnamed: 0", 1)
+            #df = self.read_in_moon_data(df)
+            df = df.drop("Unnamed: 0", 1)
+            #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
+            as_array = np.array(df)
+            #print(len(as_array))
+            if(len(as_array) == length):
+                self.currentHists[col_prefix] = df
+                self.hist_shaped[coin_and_hist_index] = as_array
+                self.coin_dict[coin_and_hist_index] = col_prefix
+                coin_and_hist_index += 1
+        self.hist_shaped = pd.Series(self.hist_shaped)
+        '''
+        main = df_list[0]
+        for i in range(1, len(df_list)):
+            main = main.join(df_list[i])
+        return main
+        '''
 
 '''
 hs = HistWorker()

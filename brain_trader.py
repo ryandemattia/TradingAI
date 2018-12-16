@@ -225,7 +225,7 @@ class PaperTrader:
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*24))
         self.start_amount = start_amount
         self.pull_polo()
-        self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1]-1)
+        self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1])
         self.outputs = self.hist_shaped.shape[0]
         self.make_shapes()
         self.folio = CryptoFolio(start_amount, self.coin_dict)
@@ -233,23 +233,24 @@ class PaperTrader:
         for l in range(len(self.in_shapes[0])):
             self.leaf_names.append('leaf_one_'+str(l))
             self.leaf_names.append('leaf_two_'+str(l))
-        
+        self.load_net()
 
     def load_net(self):
         file = open("perpetual_champion.pkl",'rb')
         g = pickle.load(file)
         file.close()
-        self.cppn = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
+        [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
+        self.cppn = the_cppn
 
     def make_shapes(self):
         self.in_shapes = []
         self.out_shapes = []
         sign = 1
-        for ix in range(self.outputs):
+        for ix in range(1,self.outputs+1):
             sign = sign *-1
-            self.out_shapes.append((sign*ix, 1))
-            for ix2 in range(len(self.hist_shaped[0][0])-1):
-                self.in_shapes.append((sign*ix, (1+ix2)*.1))
+            self.out_shapes.append((0.0-(sign*.005*ix), -1.0, -1.0))
+            for ix2 in range(1,(self.inputs//self.outputs)+1):
+                self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
         
     def pull_polo(self):
         try:
@@ -258,7 +259,7 @@ class PaperTrader:
             time.sleep(10)
             self.pull_polo()
         tickLen = '7200'
-        start = datetime.today() - timedelta(1) 
+        start = datetime.today() - timedelta(7) 
         start = str(int(start.timestamp()))
         ix = 0
         for coin in self.coins:
@@ -266,6 +267,7 @@ class PaperTrader:
                 hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
                 try:
                     df = pd.DataFrame(hist.json())
+
                     #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
                     as_array = np.array(df)
                     #print(len(as_array))
@@ -276,7 +278,7 @@ class PaperTrader:
                 except:
                     print("error reading json")
         self.hist_shaped = pd.Series(self.hist_shaped)
-        self.end_idx = len(self.hist_shaped[0])-1
+        self.end_idx = len(self.currentHists[self.coin_dict[0]]) - 34
 
 
     def get_current_balance(self):
@@ -293,12 +295,9 @@ class PaperTrader:
             active = []
             #print(self.outputs)
             for y in range(0, self.outputs):
-                try:
-                    sym_data = self.hist_shaped[y][self.hist_depth-x]
-                    #print(len(sym_data))
-                    active += sym_data.tolist()
-                except:
-                    print('error')
+                sym_data = self.hist_shaped[y][self.hist_depth-x]
+                #print(len(sym_data))
+                active += sym_data.tolist()
             master_active.append(active)
         #print(active)
         return master_active
@@ -306,6 +305,7 @@ class PaperTrader:
     def poloTrader(self):
         end_prices = {}
         active = self.get_one_bar_input_2d()
+        self.load_net()
         sub = Substrate(self.in_shapes, self.out_shapes)
         network = ESNetwork(sub, self.cppn, self.params)
         net = network.create_phenotype_network_nd('paper_net.png')
