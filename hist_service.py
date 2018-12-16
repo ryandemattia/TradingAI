@@ -79,21 +79,19 @@ class HistWorker:
         start = str(int(start.timestamp()))
         for coin in coins:
             if coin[:3] == 'BTC':
+                #print(coin)
                 hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
-                try:
-                    h_frame = pd.DataFrame(hist.json())
-                    frame = h_frame.copy()
-                    frame['avg_vol_3'] = frame['volume'].rolling(3).mean()
-                    frame['avg_vol_13'] = frame['volume'].rolling(13).mean()
-                    frame['avg_vol_34'] = frame['volume'].rolling(34).mean()
-                    frame['avg_close_3'] = frame['close'].rolling(3).mean()
-                    frame['avg_close_13'] = frame['close'].rolling(13).mean()
-                    frame['avg_close_34'] = frame['close'].rolling(34).mean()
-                    frame = frame.fillna(value=-99999, inplace=True)
-                    print(frame.head())
-                    frame.to_csv("./histories/"+coin+"_hist.txt", encoding="utf-8")
-                except:
-                    print("error reading json")
+                h_frame = pd.DataFrame(hist.json())
+                frame = h_frame.copy()
+                frame['avg_vol_3'] = frame['volume'].rolling(3).mean()
+                frame['avg_vol_13'] = frame['volume'].rolling(13).mean()
+                frame['avg_vol_34'] = frame['volume'].rolling(34).mean()
+                frame['avg_close_3'] = frame['close'].rolling(3).mean()
+                frame['avg_close_13'] = frame['close'].rolling(13).mean()
+                frame['avg_close_34'] = frame['close'].rolling(34).mean()
+                frame.fillna(value=-99999, inplace=True)
+                print(coin + " written")
+                frame.to_csv("./paper/"+coin+"_hist.txt", encoding="utf-8")
 
 
     def pull_polo(self):
@@ -149,7 +147,6 @@ class HistWorker:
         '''
 
     def combine_live_frames(self):
-        length = 7992
         fileNames = self.get_live_files()
         coin_and_hist_index = 0
         for x in range(0,len(fileNames)):
@@ -174,7 +171,5 @@ class HistWorker:
         return main
         '''
 
-'''
-hs = HistWorker()
-hs.pull_polo()
-'''
+
+

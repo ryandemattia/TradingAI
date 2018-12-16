@@ -43,9 +43,6 @@ class LiveTrader:
     def __init__(self, ticker_len, target_percent):
         self.polo = Poloniex(key, secret)
         self.target_percent = target_percent
-        self.currentHists = {}
-        self.hist_shaped = {}
-        self.coin_dict = {}
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*55))
         file = open("es_trade_god_cppn_5day.pkl",'rb')
@@ -55,10 +52,14 @@ class LiveTrader:
         self.sellCoins()
         self.bal = self.polo.returnBalances()
         self.set_target()
-        self.pull_polo()
-        self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1]-1)
-        self.outputs = self.hist_shaped.shape[0]
+        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1)
+        self.outputs = self.hs.hist_shaped.shape[0]
         self.multiplier = self.inputs/self.outputs
+
+
+    def refresh_data(self):
+        self.hs.pull_polo_live(10)
+        self.hs.combine_frames()
 
     def make_shapes(self):
         self.in_shapes = []
@@ -67,33 +68,8 @@ class LiveTrader:
         for ix in range(self.outputs):
             sign = sign *-1
             self.out_shapes.append((sign*ix, 1))
-            for ix2 in range(len(self.hist_shaped[0][0])-1):
+            for ix2 in range(len(self.hs.hist_shaped[0][0])-1):
                 self.in_shapes.append((sign*ix, (1+ix2)*.1))
-        
-    def pull_polo(self):
-        tickLen = '7200'
-        start = datetime.today() - timedelta(1) 
-        start = str(int(start.timestamp()))
-        ix = 0
-        for coin in self.tickers:
-            if coin[:3] == 'BTC':
-                try:
-                    hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
-                except:
-                    self.pull_polo()
-                try:
-                    df = pd.DataFrame(hist.json())
-                    #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
-                    as_array = np.array(df)
-                    #print(len(as_array))
-                    self.currentHists[coin] = df
-                    self.hist_shaped[ix] = as_array
-                    self.coin_dict[ix] = coin
-                    ix += 1
-                except:
-                    print("error reading json")
-        self.hist_shaped = pd.Series(self.hist_shaped)
-        self.end_idx = len(self.hist_shaped[0])-1
 
 
     def get_one_bar_input_2d(self):
@@ -101,7 +77,7 @@ class LiveTrader:
         misses = 0
         for x in range(0, self.outputs):
             try:
-                sym_data = self.hist_shaped[x][self.end_idx] 
+                sym_data = self.hs.hist_shaped[x][self.end_idx] 
                 for i in range(len(sym_data)):
                     if (i != 1):
                         active.append(sym_data[i].tolist())
@@ -176,7 +152,7 @@ class LiveTrader:
         #rng = iter(shuffle(rng))
         self.reset_tickers()
         for x in np.random.permutation(rng):
-            sym = self.coin_dict[x]
+            sym = self.hs.coin_dict[x]
             #print(out[x])
             try:
                 if(out[x] < -.5):
@@ -217,23 +193,27 @@ class PaperTrader:
                                 'config_trader')
     def __init__(self, ticker_len, start_amount, histdepth):
         self.polo = Poloniex()
-        self.currentHists = {}
-        self.hist_shaped = {}
-        self.coin_dict = {}
         self.hist_depth = histdepth
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*24))
         self.start_amount = start_amount
-        self.pull_polo()
-        self.inputs = self.hist_shaped.shape[0]*(self.hist_shaped[0].shape[1])
-        self.outputs = self.hist_shaped.shape[0]
+        self.hs = HistWorker()
+        self.refresh_data()
+        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
+        self.outputs = self.hs.hist_shaped.shape[0]
         self.make_shapes()
-        self.folio = CryptoFolio(start_amount, self.coin_dict)
+        self.folio = CryptoFolio(start_amount, self.hs.coin_dict)
         self.leaf_names = []
         for l in range(len(self.in_shapes[0])):
             self.leaf_names.append('leaf_one_'+str(l))
             self.leaf_names.append('leaf_two_'+str(l))
-        self.load_net()
+        #self.load_net()
+        
+        self.poloTrader()
+
+    def refresh_data(self):
+        self.hs.pull_polo_live(21)
+        self.hs.combine_frames()
 
     def load_net(self):
         file = open("perpetual_champion.pkl",'rb')
@@ -252,41 +232,18 @@ class PaperTrader:
             for ix2 in range(1,(self.inputs//self.outputs)+1):
                 self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
         
-    def pull_polo(self):
-        try:
-            self.coins = self.polo.returnTicker()
-        except:
-            time.sleep(10)
-            self.pull_polo()
-        tickLen = '7200'
-        start = datetime.today() - timedelta(7) 
-        start = str(int(start.timestamp()))
-        ix = 0
-        for coin in self.coins:
-            if coin[:3] == 'BTC':
-                hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
-                try:
-                    df = pd.DataFrame(hist.json())
-
-                    #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
-                    as_array = np.array(df)
-                    #print(len(as_array))
-                    self.currentHists[coin] = df
-                    self.hist_shaped[ix] = as_array
-                    self.coin_dict[ix] = coin
-                    ix += 1
-                except:
-                    print("error reading json")
-        self.hist_shaped = pd.Series(self.hist_shaped)
-        self.end_idx = len(self.currentHists[self.coin_dict[0]]) - 34
-
+    def reset_tickers(self):
+        self.tickers = self.polo.returnTicker()
+        return 
+    def get_price(self, coin):
+        return self.tickers[coin]['last']
 
     def get_current_balance(self):
-        self.pull_polo()
+        self.refresh_data()
         c_prices = {}
         for s in self.folio.ledger.keys():
             if s != 'BTC':
-                c_prices[s] = self.currentHists[s]['close'][len(self.currentHists[s]['close'])-1]
+                c_prices[s] = self.hs.currentHists[s]['close'][len(self.hs.currentHists[s]['close'])-1]
         return self.folio.get_total_btc_value_no_sell(c_prices)
         
     def get_one_bar_input_2d(self,end_idx=10):
@@ -295,7 +252,7 @@ class PaperTrader:
             active = []
             #print(self.outputs)
             for y in range(0, self.outputs):
-                sym_data = self.hist_shaped[y][self.hist_depth-x]
+                sym_data = self.hs.hist_shaped[y][self.hist_depth-x]
                 #print(len(sym_data))
                 active += sym_data.tolist()
             master_active.append(active)
@@ -315,20 +272,23 @@ class PaperTrader:
         #print(len(out))
         rng = len(out)
         #rng = iter(shuffle(rng))
+        self.reset_tickers()
         for x in np.random.permutation(rng):
-            sym = self.coin_dict[x]
+            sym = self.hs.coin_dict[x]
             #print(out[x])
             try:
                 if(out[x] < -.5):
+                    p = self.get_price(sym)
                     print("selling: ", sym)
-                    self.folio.sell_coin(sym, self.currentHists[sym]['close'][self.end_idx])
+                    self.folio.sell_coin(sym, p)
                 elif(out[x] > .5):
+                    p = self.get_price(sym)
                     print("buying: ", sym)
-                    self.folio.buy_coin(sym, self.currentHists[sym]['close'][self.end_idx])
+                    self.folio.buy_coin(sym, p)
             except:
                 print('error', sym)
             #skip the hold case because we just dont buy or sell hehe
-            end_prices[sym] = self.hist_shaped[x][len(self.hist_shaped[x])-1][2]
+            end_prices[sym] = self.hs.hist_shaped[x][len(self.hs.hist_shaped[x])-1][2]
         
         if datetime.now() >= self.end_ts:
             port_info = self.folio.get_total_btc_value(end_prices)
@@ -342,11 +302,10 @@ class PaperTrader:
                 print("current value: ", p_vals[0], "current btc holdings: ", p_vals[1])
                 #print(self.folio.ledger)
         time.sleep(self.ticker_len/4)
-        self.pull_polo()
+        self.refresh_data()
         self.poloTrader()
                         
 
 
-live = PaperTrader(7200, 1.0, 10)
-live.poloTrader()
+PaperTrader(7200, 1.0, 89)
 
