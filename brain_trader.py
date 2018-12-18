@@ -26,15 +26,14 @@ from pureples.es_hyperneat.es_hyperneat_torch import ESNetwork
 key = ""
 secret = ""
 class LiveTrader:
-    params = {"initial_depth": 3,
-            "max_depth": 6,
-            "variance_threshold": 0.013,
-            "band_threshold": 0.013,
+    params = {"initial_depth": 2,
+            "max_depth": 4,
+            "variance_threshold": 0.0000013,
+            "band_threshold": 0.0000013,
             "iteration_level": 3,
-            "division_threshold": 0.013,
+            "division_threshold": 0.0000013,
             "max_weight": 5.0,
             "activation": "tanh"}
-
 
     # Config for CPPN.
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
@@ -45,17 +44,26 @@ class LiveTrader:
         self.target_percent = target_percent
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*55))
-        file = open("es_trade_god_cppn_5day.pkl",'rb')
-        self.cppn = pickle.load(file)
-        file.close()
+        self.load_net()
         self.tickers = self.polo.returnTicker()
         self.sellCoins()
         self.bal = self.polo.returnBalances()
         self.set_target()
-        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1]-1)
+        self.refresh_data()
+        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = self.hs.hist_shaped.shape[0]
-        self.multiplier = self.inputs/self.outputs
+        self.make_shapes()
+        self.leaf_names = []
+        for l in range(len(self.in_shapes[0])):
+            self.leaf_names.append('leaf_one_'+str(l))
+            self.leaf_names.append('leaf_two_'+str(l))
 
+    def load_net(self):
+        file = open("perpetual_champion.pkl",'rb')
+        g = pickle.load(file)
+        file.close()
+        [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
+        self.cppn = the_cppn
 
     def refresh_data(self):
         self.hs.pull_polo_live(10)
@@ -125,9 +133,16 @@ class LiveTrader:
         print("selling this shit: ", coin)
         return 
 
+
     def reset_tickers(self):
-        self.tickers = self.polo.returnTicker()
+        try:
+            self.tickers = self.polo.returnTicker()
+        except:
+            time.sleep(360)
+            self.reset_tickers()
         return 
+
+
     def get_price(self, coin):
         return self.tickers[coin]['last']
     
@@ -233,7 +248,11 @@ class PaperTrader:
                 self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
         
     def reset_tickers(self):
-        self.tickers = self.polo.returnTicker()
+        try:
+            self.tickers = self.polo.returnTicker()
+        except:
+            time.sleep(360)
+            self.reset_tickers()
         return 
     def get_price(self, coin):
         return self.tickers[coin]['last']

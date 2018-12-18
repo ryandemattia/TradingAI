@@ -128,7 +128,7 @@ class PurpleTrader:
         return self.evaluate(network) >= self.highest_returns
 
     def trial_run(self):
-        r_start = self.hd
+        r_start = 0
         file = open("es_trade_god_cppn_3d.pkl",'rb')
         [cppn] = pickle.load(file)
         network = ESNetwork(self.subStrate, cppn, self.params)
@@ -148,7 +148,7 @@ class PurpleTrader:
             if(g.fitness > fitter_val):
                 fitter = g
                 fitter_val = g.fitness
-        with open('perpetual_champion.pkl', 'wb') as output:
+        with open('./champs/perpetual_champion_'+str(fitter.key)+'.pkl', 'wb') as output:
             pickle.dump(fitter, output)
         print("latest_saved")
 # Create the population and run the XOR task by providing the above fitness function.

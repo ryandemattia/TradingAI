@@ -174,10 +174,3 @@ class HistWorker:
             main = main.join(df_list[i])
         return main
         '''
-
-
-
-hs = HistWorker()
-hs.combine_live_frames()
-
-print(hs.currentHists['LTC']['date'][0], hs.currentHists['LTC']['date'][len(hs.currentHists['LTC']['date'])-1])
