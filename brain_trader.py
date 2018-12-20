@@ -44,12 +44,11 @@ class LiveTrader:
         self.target_percent = target_percent
         self.ticker_len = ticker_len
         self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*55))
-        self.load_net()
+        self.refresh_data()
         self.tickers = self.polo.returnTicker()
         self.sellCoins()
         self.bal = self.polo.returnBalances()
         self.set_target()
-        self.refresh_data()
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = self.hs.hist_shaped.shape[0]
         self.make_shapes()
@@ -57,6 +56,7 @@ class LiveTrader:
         for l in range(len(self.in_shapes[0])):
             self.leaf_names.append('leaf_one_'+str(l))
             self.leaf_names.append('leaf_two_'+str(l))
+        self.load_net()
 
     def load_net(self):
         file = open("perpetual_champion.pkl",'rb')
@@ -148,7 +148,12 @@ class LiveTrader:
     
     def set_target(self):
         total = 0
-        full_bal = self.polo.returnCompleteBalances()
+        try:
+            full_bal = self.polo.returnCompleteBalances()
+        except:
+            print('api waiting a bit to retry')
+            time.sleep(360)
+            self.set_target()
         for x in full_bal:
             total += full_bal[x]["btcValue"]
         self.target = total*self.target_percent
@@ -189,6 +194,7 @@ class LiveTrader:
             return
         else:
             time.sleep(self.ticker_len)
+        self.refresh_data()
         self.pull_polo()
         self.poloTrader()
 

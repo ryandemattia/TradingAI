@@ -47,10 +47,10 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_frames()
+        self.hs.combine_live_usd_frames()
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
-        self.end_idx = len(self.hs.currentHists["ZEC"])
+        self.end_idx = len(self.hs.currentHists["ETHUSD"])
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = self.hs.hist_shaped.shape[0]
@@ -95,7 +95,7 @@ class PurpleTrader:
         end_prices = {}
         buys = 0
         sells = 0
-        if(len(g.connections) > ):
+        if(len(g.connections) > 0):
             for z in range(rand_start, rand_start+self.epoch_len):
                 active = self.get_one_epoch_input(z)
                 network.reset()
@@ -110,14 +110,14 @@ class PurpleTrader:
                     #try:
                     if(out[x] < -.5):
                         #print("selling")
-                        portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
+                        portfolio.sell_coin(sym, self.hs.currentHists[sym]['Close'][z])
                         #print("bought ", sym)
                     elif(out[x] > .5):
                         #print("buying")
-                        portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
+                        portfolio.buy_coin(sym, self.hs.currentHists[sym]['Close'][z])
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
-                    end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
+                    end_prices[sym] = self.hs.currentHists[sym]['Close'][self.epoch_len+rand_start]
             result_val = portfolio.get_total_btc_value(end_prices)
             print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
             ft = result_val[0]

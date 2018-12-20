@@ -40,6 +40,10 @@ class HistWorker:
         histFiles = os.listdir(os.path.join(os.path.dirname(__file__), 'paper'))
         return histFiles
 
+    def get_gdax_training_files(self):
+        histFiles = os.listdir(os.path.join(os.path.dirname(__file__), '../gdax'))
+        return histFiles
+
     def get_data_frame(self, fname):
         frame = pd.read_csv('./histories/'+fname) # timestamps will but used as index
         return frame
@@ -48,6 +52,9 @@ class HistWorker:
         frame = pd.read_csv('./paper/'+fname)
         return frame
 
+    def get_file_as_frame(self, fname):
+        frame = pd.read_csv('../gdax/'+fname)
+        return frame
 
     def get_file_symbol(self, f):
         f = f.split("_", 2)
@@ -174,3 +181,32 @@ class HistWorker:
             main = main.join(df_list[i])
         return main
         '''
+
+
+    def combine_live_usd_frames(self):
+        fileNames = self.get_gdax_training_files()
+        coin_and_hist_index = 0
+        for x in range(0,len(fileNames)):
+            df = self.get_file_as_frame(fileNames[x])
+            col_prefix = self.get_file_symbol(fileNames[x])
+            #df.drop("Unnamed: 0", 1)
+            #df = self.read_in_moon_data(df)
+            self.currentHists[col_prefix] = df
+            df = df.drop('Symbol', 1)
+            df = df.drop("Date", 1)
+            #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
+            as_array = np.array(df)
+            #print(len(as_array))
+            self.hist_shaped[coin_and_hist_index] = as_array
+            self.coin_dict[coin_and_hist_index] = col_prefix
+            coin_and_hist_index += 1
+        self.hist_shaped = pd.Series(self.hist_shaped)
+        '''
+        main = df_list[0]
+        for i in range(1, len(df_list)):
+            main = main.join(df_list[i])
+        return main
+        '''
+
+
+        
