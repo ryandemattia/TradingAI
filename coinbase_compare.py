@@ -104,53 +104,54 @@ class PurpleTrader:
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
             net = network.create_phenotype_network_nd('./champs_visualized/genome_'+str(g_ix))
-            fitness, trade_hist = self.evaluate(net, network, start)
+            fitness, trade_hist = self.evaluate(net, network, start, g_ix)
             print(trade_hist)
             th_frame = pd.DataFrame(trade_hist)
             th_frame.to_csv('./champs_hist/th_'+str(g_ix))
 
-    def evaluate(self, network, es, rand_start):
+    def evaluate(self, network, es, rand_start, g):
         portfolio_start = .05
         portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
         end_prices = {}
         buys = 0
         sells = 0
         th = []
-        for z in range(rand_start, rand_start+self.epoch_len):
-            active = self.get_one_epoch_input(z)
-            network.reset()
-            for n in range(1, self.hd+1):
-                out = network.activate(active[self.hd-n])
-            #print(len(out))
-            rng = len(out)
-            #rng = iter(shuffle(rng))
-            for x in np.random.permutation(rng):
-                sym = self.hs.coin_dict[x]
-                #print(out[x])
-                #try:
-                if(out[x] < -.5):
-                    #print("selling")
-                    th += {
-                        'type': 'sell',
-                        'symbol': sym,
-                        'date': self.hs.currentHists[sym]['Date'][z],
-                        'amount': portfolio.ledger[sym],
-                        'price': self.hs.currentHists[sym]['Close'][z]
-                    }
-                    portfolio.sell_coin(sym, self.hs.currentHists[sym]['Close'][z])
-                    #print("bought ", sym)
-                elif(out[x] > .5):
-                    th += {
-                        'type': 'buy',
-                        'symbol': sym,
-                        'date': self.hs.currentHists[sym]['Date'][z],
-                        'amount': portfolio.ledger[sym],
-                        'price': self.hs.currentHists[sym]['Close'][z]
-                    }
-                    portfolio.buy_coin(sym, self.hs.currentHists[sym]['Close'][z])
-                    #print("sold ", sym)
-                #skip the hold case because we just dont buy or sell hehe
-                end_prices[sym] = self.hs.currentHists[sym]['Close'][self.epoch_len+rand_start]
+        with open('./champs_hist/trade_hist'+str(g), 'w') as ft:
+            ft.write('date,symbol,type,amnt,price \n')
+            for z in range(rand_start):
+                active = self.get_one_epoch_input(z)
+                network.reset()
+                for n in range(1, self.hd+1):
+                    out = network.activate(active[self.hd-n])
+                #print(len(out))
+                rng = len(out)
+                #rng = iter(shuffle(rng))
+                for x in np.random.permutation(rng):
+                    sym = self.hs.coin_dict[x]
+                    #print(out[x])
+                    #try:
+                    if(out[x] < -.5):
+                        #print("selling")
+                        did_sell = portfolio.sell_coin(sym, self.hs.currentHists[sym]['Close'][z])
+                        if did_sell:
+                            ft.write(self.hs.currentHists[sym]['Date'][z] + ",")
+                            ft.write(sym +",")
+                            ft.write('sell,')
+                            ft.write(str(portfolio.ledger[sym])+",")
+                            ft.write(str(self.hs.currentHists[sym]['Close'][z]) + ", \n")
+                        
+                        #print("bought ", sym)
+                    elif(out[x] > .5):
+                        did_buy = portfolio.buy_coin(sym, self.hs.currentHists[sym]['Close'][z])
+                        if did_buy:
+                            ft.write(self.hs.currentHists[sym]['Date'][z] + ",")
+                            ft.write(sym +",")
+                            ft.write('buy,')
+                            ft.write(str(portfolio.target_amount)+",")
+                            ft.write(str(self.hs.currentHists[sym]['Close'][z]) + ", \n")
+                        #print("sold ", sym)
+                    #skip the hold case because we just dont buy or sell hehe
+                    end_prices[sym] = self.hs.currentHists[sym]['Close'][self.epoch_len+rand_start]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
         ft = result_val[0]

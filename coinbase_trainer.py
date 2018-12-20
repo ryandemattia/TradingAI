@@ -22,7 +22,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
+    params = {"initial_depth": 2,
             "max_depth": 4,
             "variance_threshold": 0.0000013,
             "band_threshold": 0.0000013,
@@ -168,7 +168,7 @@ def run_pop(task, gens):
 if __name__ == '__main__':
     task = PurpleTrader(89)
     #print(task.trial_run())
-    winner = run_pop(task, 5)[0]
+    winner = run_pop(task, 21)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
