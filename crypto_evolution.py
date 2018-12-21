@@ -62,7 +62,7 @@ class CryptoFolio:
                 current_price = e_prices[c]
                 btc_amt = current_price * self.ledger[c]
                 btcval += btc_amt
-                print(c, " ", btc_amt)
+                #print(c, " ", btc_amt)
         return btcval, self.ledger['BTC']
 
     def evaluate_output(self, out, coin, price):

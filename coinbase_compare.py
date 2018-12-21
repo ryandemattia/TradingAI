@@ -114,7 +114,7 @@ class PurpleTrader:
         sells = 0
         th = []
         with open('./champs_hist/trade_hist'+str(g), 'w') as ft:
-            ft.write('date,symbol,type,amnt,price \n')
+            ft.write('date,symbol,type,amnt,price,current_balance \n')
             for z in range(self.hd, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
                 network.reset()
@@ -122,6 +122,9 @@ class PurpleTrader:
                     out = network.activate(active[self.hd-n])
                 #print(len(out))
                 rng = len(out)
+                for x in range(rng):
+                    sym2 = self.hs.coin_dict[x]
+                    end_prices[sym2] = self.hs.currentHists[sym2]['Close'][self.hs.hist_full_size-1]
                 #rng = iter(shuffle(rng))
                 for x in np.random.permutation(rng):
                     sym = self.hs.coin_dict[x]
@@ -135,8 +138,8 @@ class PurpleTrader:
                             ft.write(sym +",")
                             ft.write('sell,')
                             ft.write(str(portfolio.ledger[sym])+",")
-                            ft.write(str(self.hs.currentHists[sym]['Close'][z]) + ", \n")
-                        
+                            ft.write(str(self.hs.currentHists[sym]['Close'][z])+",")
+                            ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
                         #print("bought ", sym)
                     elif(out[x] > .5):
                         did_buy = portfolio.buy_coin(sym, self.hs.currentHists[sym]['Close'][z])
@@ -145,10 +148,10 @@ class PurpleTrader:
                             ft.write(sym +",")
                             ft.write('buy,')
                             ft.write(str(portfolio.target_amount)+",")
-                            ft.write(str(self.hs.currentHists[sym]['Close'][z]) + ", \n")
+                            ft.write(str(self.hs.currentHists[sym]['Close'][z])+",")
+                            ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
                         #print("sold ", sym)
-                    #skip the hold case because we just dont buy or sell hehe
-                    end_prices[sym] = self.hs.currentHists[sym]['Close'][self.hs.hist_full_size-1]
+                    #skip the hold case because we just dont buy or sell heh
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
         ft = result_val[0]
