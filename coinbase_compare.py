@@ -104,13 +104,10 @@ class PurpleTrader:
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
             net = network.create_phenotype_network_nd('./champs_visualized/genome_'+str(g_ix))
-            fitness, trade_hist = self.evaluate(net, network, start, g_ix)
-            print(trade_hist)
-            th_frame = pd.DataFrame(trade_hist)
-            th_frame.to_csv('./champs_hist/th_'+str(g_ix))
+            fitness = self.evaluate(net, network, start, g_ix)
 
     def evaluate(self, network, es, rand_start, g):
-        portfolio_start = .05
+        portfolio_start = 100000
         portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
         end_prices = {}
         buys = 0
@@ -118,7 +115,7 @@ class PurpleTrader:
         th = []
         with open('./champs_hist/trade_hist'+str(g), 'w') as ft:
             ft.write('date,symbol,type,amnt,price \n')
-            for z in range(rand_start):
+            for z in range(self.hd, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
                 network.reset()
                 for n in range(1, self.hd+1):
@@ -151,11 +148,11 @@ class PurpleTrader:
                             ft.write(str(self.hs.currentHists[sym]['Close'][z]) + ", \n")
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
-                    end_prices[sym] = self.hs.currentHists[sym]['Close'][self.epoch_len+rand_start]
+                    end_prices[sym] = self.hs.currentHists[sym]['Close'][self.hs.hist_full_size-1]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
         ft = result_val[0]
-        return ft, th
+        return ft
 
     def solve(self, network):
         return self.evaluate(network) >= self.highest_returns

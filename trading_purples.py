@@ -95,7 +95,7 @@ class PurpleTrader:
         end_prices = {}
         buys = 0
         sells = 0
-        if(len(g.connections) > ):
+        if(len(g.connections) > 0.0):
             for z in range(rand_start, rand_start+self.epoch_len):
                 active = self.get_one_epoch_input(z)
                 network.reset()

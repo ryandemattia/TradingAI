@@ -90,7 +90,7 @@ class PurpleTrader:
         return master_active
 
     def evaluate(self, network, es, rand_start, g, verbose=False):
-        portfolio_start = .05
+        portfolio_start = 1000000
         portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
         end_prices = {}
         buys = 0
@@ -100,6 +100,7 @@ class PurpleTrader:
                 active = self.get_one_epoch_input(z)
                 network.reset()
                 for n in range(1, self.hd+1):
+                    #print(active[0][0])
                     out = network.activate(active[self.hd-n])
                 #print(len(out))
                 rng = len(out)
@@ -108,11 +109,11 @@ class PurpleTrader:
                     sym = self.hs.coin_dict[x]
                     #print(out[x])
                     #try:
-                    if(out[x] < -.5):
+                    if(out[x] < -0.5):
                         #print("selling")
                         portfolio.sell_coin(sym, self.hs.currentHists[sym]['Close'][z])
                         #print("bought ", sym)
-                    elif(out[x] > .5):
+                    elif(out[x] > 0.5):
                         #print("buying")
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['Close'][z])
                         #print("sold ", sym)
@@ -151,7 +152,6 @@ class PurpleTrader:
                 fitter_val = g.fitness
         with open('./champs/perpetual_champion_'+str(fitter.key)+'.pkl', 'wb') as output:
             pickle.dump(fitter, output)
-        print("latest_saved")
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
     pop = neat.population.Population(task.config)
@@ -166,9 +166,9 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(89)
+    task = PurpleTrader(255)
     #print(task.trial_run())
-    winner = run_pop(task, 21)[0]
+    winner = run_pop(task, 55)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.

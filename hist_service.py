@@ -142,6 +142,7 @@ class HistWorker:
             #df.drop("Unnamed: 0", 1)
             #df = self.read_in_moon_data(df)
             df = df.drop("Unnamed: 0", 1)
+            df = (df - df.mean()) / (df.max() - df.min())
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             as_array = np.array(df)
             #print(len(as_array))
@@ -167,6 +168,7 @@ class HistWorker:
             #df.drop("Unnamed: 0", 1)
             #df = self.read_in_moon_data(df)
             df = df.drop("Unnamed: 0", 1)
+            df = (df - df.mean()) / (df.max() - df.min())
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             as_array = np.array(df)
             #print(len(as_array))
@@ -191,10 +193,12 @@ class HistWorker:
             col_prefix = self.get_file_symbol(fileNames[x])
             #df.drop("Unnamed: 0", 1)
             #df = self.read_in_moon_data(df)
+            #df = df[::-1]
             df = df[::-1]
-            self.currentHists[col_prefix] = df[::-1]
+            self.currentHists[col_prefix] = df
             df = df.drop('Symbol', 1)
             df = df.drop("Date", 1)
+            df = (df - df.mean()) / (df.max() - df.min())
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             as_array = np.array(df)
             #print(len(as_array))
