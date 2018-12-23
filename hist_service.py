@@ -142,12 +142,15 @@ class HistWorker:
             #df.drop("Unnamed: 0", 1)
             #df = self.read_in_moon_data(df)
             df = df.drop("Unnamed: 0", 1)
-            df = (df - df.mean()) / (df.max() - df.min())
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
+
             as_array = np.array(df)
+
             #print(len(as_array))
             if(len(as_array) == length):
                 self.currentHists[col_prefix] = df
+                df = (df - df.mean()) / (df.max() - df.min())
+                as_array=np.array(df)
                 self.hist_shaped[coin_and_hist_index] = as_array
                 self.coin_dict[coin_and_hist_index] = col_prefix
                 coin_and_hist_index += 1
@@ -159,7 +162,7 @@ class HistWorker:
         return main
         '''
 
-    def combine_live_frames(self):
+    def combine_live_frames(self, length):
         fileNames = self.get_live_files()
         coin_and_hist_index = 0
         for x in range(0,len(fileNames)):
@@ -168,14 +171,16 @@ class HistWorker:
             #df.drop("Unnamed: 0", 1)
             #df = self.read_in_moon_data(df)
             df = df.drop("Unnamed: 0", 1)
-            df = (df - df.mean()) / (df.max() - df.min())
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
             as_array = np.array(df)
             #print(len(as_array))
-            self.currentHists[col_prefix] = df
-            self.hist_shaped[coin_and_hist_index] = as_array
-            self.coin_dict[coin_and_hist_index] = col_prefix
-            coin_and_hist_index += 1
+            if(len(as_array) > length):
+                self.currentHists[col_prefix] = df
+                df = (df - df.mean()) / (df.max() - df.min())
+                as_array = np.array(df)
+                self.hist_shaped[coin_and_hist_index] = as_array
+                self.coin_dict[coin_and_hist_index] = col_prefix
+                coin_and_hist_index += 1
         self.hist_shaped = pd.Series(self.hist_shaped)
         '''
         main = df_list[0]
@@ -212,6 +217,3 @@ class HistWorker:
             main = main.join(df_list[i])
         return main
         '''
-
-
-        
