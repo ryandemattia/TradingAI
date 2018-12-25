@@ -138,6 +138,7 @@ class LiveTrader:
     def reset_tickers(self):
         try:
             self.tickers = self.polo.returnTicker()
+            self.bal = self.polo.returnCompleteBalances()
         except:
             time.sleep(360)
             self.reset_tickers()
@@ -149,7 +150,7 @@ class LiveTrader:
 
     def set_target(self):
         total = 0
-        full_bal = self.polo.returnCompleteBalances()
+        full_bal = self.polo.returnBalances()
         for x in full_bal:
             total += full_bal[x]["btcValue"]
         self.target = total*self.target_percent
