@@ -144,7 +144,7 @@ class PurpleTrader:
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd('current_net.png')
+            net = network.create_phenotype_network_nd()
             g.fitness = self.evaluate(net, network, r_start, g)
             if(g.fitness > fitter_val):
                 fitter = g
