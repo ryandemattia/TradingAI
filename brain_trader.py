@@ -63,7 +63,7 @@ class LiveTrader:
         self.poloTrader()
 
     def load_net(self):
-        file = open("./champ/perpetual_champion.pkl",'rb')
+        file = open("./champs_depth2/perpetual_champion_512.pkl",'rb')
         g = pickle.load(file)
         file.close()
         [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
