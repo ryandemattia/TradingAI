@@ -152,6 +152,7 @@ class PurpleTrader:
         with open('./champs/perpetual_champion_'+str(fitter.key)+'.pkl', 'wb') as output:
             pickle.dump(fitter, output)
         print("latest_saved")
+        return
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
     pop = neat.population.Population(task.config)
