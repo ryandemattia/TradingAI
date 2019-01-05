@@ -23,12 +23,12 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2,
+    params = {"initial_depth": 3,
             "max_depth": 4,
-            "variance_threshold": 0.0000013,
-            "band_threshold": 0.0000013,
+            "variance_threshold": 0.00013,
+            "band_threshold": 0.00013,
             "iteration_level": 3,
-            "division_threshold": 0.0000013,
+            "division_threshold": 0.00013,
             "max_weight": 5.0,
             "activation": "tanh"}
 
@@ -98,9 +98,9 @@ class PurpleTrader:
         self.cppn = the_cppn
 
     def run_champs(self):
-        genomes = os.listdir(os.path.join(os.path.dirname(__file__), 'champs'))
+        genomes = os.listdir(os.path.join(os.path.dirname(__file__), 'champs_cppn_7_hidden'))
         for g_ix in range(len(genomes)):
-            genome = self.load_net('./champs/'+genomes[g_ix])
+            genome = self.load_net('./champs_cppn_7_hidden/'+genomes[g_ix])
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
             net = network.create_phenotype_network_nd('./champs_visualized/genome_'+str(g_ix))
@@ -113,7 +113,7 @@ class PurpleTrader:
         buys = 0
         sells = 0
         th = []
-        with open('./champs_hist/trade_hist'+str(g), 'w') as ft:
+        with open('./champs_hist/trade_hist'+str(g)+'.txt', 'w') as ft:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
             for z in range(self.hd, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
