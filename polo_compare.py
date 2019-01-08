@@ -22,12 +22,12 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2,
+    params = {"initial_depth": 3,
             "max_depth": 4,
-            "variance_threshold": 0.0000013,
-            "band_threshold": 0.0000013,
+            "variance_threshold": 0.00013,
+            "band_threshold": 0.00013,
             "iteration_level": 3,
-            "division_threshold": 0.0000013,
+            "division_threshold": 0.00013,
             "max_weight": 5.0,
             "activation": "tanh"}
 
@@ -61,7 +61,7 @@ class PurpleTrader:
             for ix2 in range(1,(self.inputs//self.outputs)+1):
                 self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 89
+        self.epoch_len = 144
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
         #num_leafs = 2**(len(self.node_names)-1)//2
@@ -97,13 +97,13 @@ class PurpleTrader:
         self.cppn = the_cppn
 
     def run_champs(self):
-        genomes = os.listdir(os.path.join(os.path.dirname(__file__), 'champs_depth2'))
+        genomes = os.listdir(os.path.join(os.path.dirname(__file__), 'champs'))
         fitness_data = {}
         for g_ix in range(len(genomes)):
-            genome = self.load_net('./champs_depth2/'+genomes[g_ix])
+            genome = self.load_net('./champs/'+genomes[g_ix])
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
-            net = network.create_phenotype_network_nd('./champs_visualized/genome_'+str(g_ix))
+            net = network.create_phenotype_network_nd('./champs_v_d3/genome_'+str(g_ix))
             fitness = self.evaluate(net, network, start, g_ix, genomes[g_ix])
 
     def evaluate(self, network, es, rand_start, g, p_name):
@@ -113,7 +113,7 @@ class PurpleTrader:
         buys = 0
         sells = 0
         th = []
-        with open('./champs_hist/trade_hist'+p_name, 'w') as ft:
+        with open('./champs_hist_d3/'+p_name, 'w') as ft:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
             for z in range(self.hd, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
@@ -122,10 +122,13 @@ class PurpleTrader:
                     out = network.activate(active[self.hd-n])
                 #print(len(out))
                 rng = len(out)
+
                 for x in range(rng):
                     sym2 = self.hs.coin_dict[x]
                     end_prices[sym2] = self.hs.currentHists[sym2]['close'][self.hs.hist_full_size-1]
                 #rng = iter(shuffle(rng))
+                if(z - self.hd)%self.epoch_len == 0:
+                    portfolio.get_total_btc_value(end_prices)
                 for x in np.random.permutation(rng):
                     sym = self.hs.coin_dict[x]
                     #print(out[x])
@@ -187,5 +190,5 @@ class PurpleTrader:
 # Create the population and run the XOR task by providing the above fitness function.
 
 
-pt = PurpleTrader(89)
+pt = PurpleTrader(144)
 pt.run_champs()
