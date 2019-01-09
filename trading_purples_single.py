@@ -22,7 +22,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
+    params = {"initial_depth": 2,
             "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
@@ -52,14 +52,13 @@ class PurpleTrader:
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.currentHists["ZEC"])
         self.but_target = .1
-        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
-        self.outputs = self.hs.hist_shaped.shape[0]
+        self.inputs = self.hs.hist_shaped[0].shape[1]
+        self.outputs = 1
         sign = 1
-        for ix in range(1,self.outputs+1):
+        for ix in range(1,self.inputs+1):
             sign = sign *-1
-            self.out_shapes.append((0.0-(sign*.005*ix), -1.0, -1.0))
-            for ix2 in range(1,(self.inputs//self.outputs)+1):
-                self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
+            self.in_shapes.append((0.0-(sign*.005*ix), -1.0, 0.0+(sign*.005*ix)))
+        self.out_shapes.append((0.0, 1.0, 0.0))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 89
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
@@ -89,6 +88,17 @@ class PurpleTrader:
         #print(active)
         return master_active
 
+    def get_single_symbol_epoch(self, end_idx, symbol_idx):
+        master_active = []
+        for x in range(0, self.hd):
+            try:
+                sym_data = self.hs.hist_shaped[symbol_idx][end_idx-x]
+                #print(len(sym_data))
+                master_active.append(sym_data.tolist())
+            except:
+                print('error')
+        return master_active
+
     def evaluate(self, network, es, rand_start, g, verbose=False):
         portfolio_start = .05
         portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
@@ -97,22 +107,21 @@ class PurpleTrader:
         sells = 0
         if(len(g.connections) > 0.0):
             for z in range(rand_start, rand_start+self.epoch_len):
-                active = self.get_one_epoch_input(z)
-                network.reset()
-                for n in range(1, self.hd+1):
-                    out = network.activate(active[self.hd-n])
-                #print(len(out))
-                rng = len(out)
-                #rng = iter(shuffle(rng))
-                for x in np.random.permutation(rng):
+                for x in np.random.permutation(self.outputs):
                     sym = self.hs.coin_dict[x]
+                    active = self.get_single_symbol_epoch(z, x)
+                    network.reset()
+                    for n in range(1, self.hd+1):
+                        out = network.activate(active[self.hd-n])
+                    #print(len(out))
+
                     #print(out[x])
                     #try:
-                    if(out[x] < -.5):
+                    if(out[0] < -.5):
                         #print("selling")
                         portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("bought ", sym)
-                    elif(out[x] > .5):
+                    elif(out[0] > .5):
                         #print("buying")
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("sold ", sym)
