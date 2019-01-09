@@ -55,9 +55,9 @@ class PurpleTrader:
         self.inputs = self.hs.hist_shaped.shape[1]
         self.outputs = 1
         sign = 1
-        for ix in range(1,self.outputs+1):
+        for ix in range(1,self.inputs + 1):
             sign = sign *-1
-            self.out_shapes.append((0.0-(sign*.005*ix), -1.0, -1.0))
+            self.in_shapes.append((0.0-(sign*.005*ix), -1.0, 1.00.0-(sign*.005*ix)))
         self.out_shapes.append((0.0, 0.0, ))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 21
