@@ -61,7 +61,7 @@ class PurpleTrader:
             for ix2 in range(1,(self.inputs//self.outputs)+1):
                 self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 144
+        self.epoch_len = 255
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
         #num_leafs = 2**(len(self.node_names)-1)//2
@@ -190,5 +190,5 @@ class PurpleTrader:
 # Create the population and run the XOR task by providing the above fitness function.
 
 
-pt = PurpleTrader(144)
+pt = PurpleTrader(55)
 pt.run_champs()
