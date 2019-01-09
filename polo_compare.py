@@ -128,7 +128,7 @@ class PurpleTrader:
                     end_prices[sym2] = self.hs.currentHists[sym2]['close'][self.hs.hist_full_size-1]
                 #rng = iter(shuffle(rng))
                 if(z - self.hd)%self.epoch_len == 0:
-                    portfolio.get_total_btc_value(end_prices)
+                    print(portfolio.get_total_btc_value(end_prices)[0])
                 for x in np.random.permutation(rng):
                     sym = self.hs.coin_dict[x]
                     #print(out[x])
