@@ -27,11 +27,11 @@ key = ""
 secret = ""
 class LiveTrader:
     params = {"initial_depth": 2,
-            "max_depth": 4,
-            "variance_threshold": 0.13,
-            "band_threshold": 0.13,
+            "max_depth": 3,
+            "variance_threshold": 0.00013,
+            "band_threshold": 0.00013,
             "iteration_level": 3,
-            "division_threshold": 0.13,
+            "division_threshold": 0.00013,
             "max_weight": 5.0,
             "activation": "tanh"}
 
@@ -99,7 +99,12 @@ class LiveTrader:
 
 
     def closeOrders(self):
-        orders = self.polo.returnOpenOrders()
+        try:
+            orders = self.polo.returnOpenOrders()
+        except:
+            print('error getting open orers')
+            time.sleep(360)
+            self.closeOrder()
         for o in orders:
             if orders[o] != []:
                 try:
@@ -138,11 +143,12 @@ class LiveTrader:
     def reset_tickers(self):
         try:
             self.tickers = self.polo.returnTicker()
-            self.bal = self.polo.returnCompleteBalances()
+            self.bal = self.polo.returnBalances()
         except:
             time.sleep(360)
             self.reset_tickers()
         return
+
 
 
     def get_price(self, coin):
@@ -150,7 +156,7 @@ class LiveTrader:
 
     def set_target(self):
         total = 0
-        full_bal = self.polo.returnBalances()
+        full_bal = self.polo.returnCompleteBalances()
         for x in full_bal:
             total += full_bal[x]["btcValue"]
         self.target = total*self.target_percent
@@ -176,12 +182,12 @@ class LiveTrader:
                 if(out[x] < -.5):
                     print("selling: ", sym)
                     p = self.get_price('BTC_'+sym)
-                    price = p -(p*.015)
+                    price = p -(p*.01)
                     self.sell_coin('BTC_'+sym, price)
                 elif(out[x] > .5):
                     print("buying: ", sym)
                     p = self.get_price('BTC_'+sym)
-                    price = p*1.015
+                    price = p*1.01
                     self.buy_coin('BTC_'+sym, price)
             except:
                 print('error', sym)
@@ -192,16 +198,16 @@ class LiveTrader:
         else:
             time.sleep(self.ticker_len)
         self.refresh_data()
-        self.closeOrders()
+        #self.closeOrders()
         self.poloTrader()
 
 class PaperTrader:
     params = {"initial_depth": 2,
             "max_depth": 4,
-            "variance_threshold": 0.0000013,
-            "band_threshold": 0.0000013,
+            "variance_threshold": 0.00013,
+            "band_threshold": 0.00013,
             "iteration_level": 3,
-            "division_threshold": 0.0000013,
+            "division_threshold": 0.00013,
             "max_weight": 5.0,
             "activation": "tanh"}
 
@@ -325,5 +331,5 @@ class PaperTrader:
 
 
 
-LiveTrader(7200, .1, 89)
+LiveTrader(7200, .1, 144)
 #PaperTrader(7200, 1.0, 89)
