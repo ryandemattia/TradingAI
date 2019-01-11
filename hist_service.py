@@ -93,6 +93,7 @@ class HistWorker:
         df = (df - df.mean()) / (df.max() - df.min())
         as_array = np.array(df)
         self.hist_shaped = as_array
+        self.hist_full_size = self.hist_shaped.shape[0]
     
     def pull_polo_live(self, lb):
         polo = Poloniex()
@@ -106,10 +107,10 @@ class HistWorker:
                 hist = requests.get('https://poloniex.com/public?command=returnChartData&currencyPair='+coin+'&start='+start+'&end=9999999999&period='+tickLen)
                 h_frame = pd.DataFrame(hist.json())
                 frame = h_frame.copy()
-                frame['avg_vol_3'] = frame['volume'].rolling(3).mean()
+                frame['avg_vol_3'] = frame['volume'].rolling(89).mean()
                 frame['avg_vol_13'] = frame['volume'].rolling(13).mean()
                 frame['avg_vol_34'] = frame['volume'].rolling(34).mean()
-                frame['avg_close_3'] = frame['close'].rolling(3).mean()
+                frame['avg_close_3'] = frame['close'].rolling(89).mean()
                 frame['avg_close_13'] = frame['close'].rolling(13).mean()
                 frame['avg_close_34'] = frame['close'].rolling(34).mean()
                 frame.fillna(value=-99999, inplace=True)
@@ -129,10 +130,10 @@ class HistWorker:
                 try:
                     h_frame = pd.DataFrame(hist.json())
                     frame = h_frame.copy()
-                    frame['avg_vol_3'] = frame['volume'].rolling(3).mean()
+                    frame['avg_vol_3'] = frame['volume'].rolling(89).mean()
                     frame['avg_vol_13'] = frame['volume'].rolling(13).mean()
                     frame['avg_vol_34'] = frame['volume'].rolling(34).mean()
-                    frame['avg_close_3'] = frame['close'].rolling(3).mean()
+                    frame['avg_close_3'] = frame['close'].rolling(89).mean()
                     frame['avg_close_13'] = frame['close'].rolling(13).mean()
                     frame['avg_close_34'] = frame['close'].rolling(34).mean()
                     frame = frame.fillna(value=-99999, inplace=True)
@@ -227,8 +228,9 @@ class HistWorker:
         for i in range(1, len(df_list)):
             main = main.join(df_list[i])
         return main
-        '''
+
 
 hs = HistWorker()
 hs.build_vix_frame()
-print(hs.hist_shaped.shape, hs.currentHists.head())
+print(hs.hist_shaped[0], hs.hist_shaped[, hs.currentHists.head())
+'''

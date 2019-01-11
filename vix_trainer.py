@@ -22,15 +22,14 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
-            "max_depth": 6,
+    params = {"initial_depth": 2,
+            "max_depth": 3,
             "variance_threshold": 0.013,
             "band_threshold": 0.013,
             "iteration_level": 3,
             "division_threshold": 0.013,
             "max_weight": 5.0,
             "activation": "tanh"}
-
 
     # Config for CPPN.
     config = neat.config.Config(neat.genome.DefaultGenome, neat.reproduction.DefaultReproduction,
@@ -46,19 +45,20 @@ class PurpleTrader:
     in_shapes = []
     out_shapes = []
     def __init__(self, hist_depth):
+        self.generation_index = 0
         self.hs = HistWorker()
         self.hs.build_vix_frame()
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.currentHists)
-        self.but_target = .1
+        self.but_target = .25
         self.inputs = self.hs.hist_shaped.shape[1]
         self.outputs = 1
         sign = 1
         for ix in range(1,self.inputs + 1):
             sign = sign *-1
-            self.in_shapes.append((0.0-(sign*.005*ix), -0.5, 1.00.0-(sign*.005*ix)))
-        self.out_shapes.append((0.0, 1.0, 0.0))
+            self.in_shapes.append((0.0-(sign*.005*ix), 0.0-(sign*.005*ix), 1.0))
+        self.out_shapes.append((0.0, 0.0, 1.0))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 21
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
@@ -78,40 +78,42 @@ class PurpleTrader:
             try:
                 sym_data = self.hs.hist_shaped[end_idx-x]
                 #print(len(sym_data))
-                master_active = sym_data.tolist()
+                master_active.append(sym_data.tolist())
             except:
                 print('error')
         #print(active)
         return master_active
 
     def evaluate(self, network, es, rand_start, verbose=False):
-        portfolio_start = .05
+        portfolio_start = 100000
         portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
+        portfolio.ledger['vix'] = 0.0
         end_prices = {}
         buys = 0
         sells = 0
         for z in range(rand_start, rand_start+self.epoch_len):
             active = self.get_one_epoch_input(z)
             network.reset()
-            for n in range(1, self.hd+1):
+            #print(len(active))
+            for n in range(0, self.hd):
+                n+=1
                 out = network.activate(active[self.hd-n])
             #print(len(out))
             rng = len(out)
             #rng = iter(shuffle(rng))
-            for x in np.random.permutation(rng):
-                sym = self.hs.coin_dict[x]
+            sym = "vix"
                 #print(out[x])
                 #try:
-                if(out[0] < -.5):
-                    #print("selling")
-                    portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
-                    #print("bought ", sym)
-                elif(out[0] > .5):
-                    #print("buying")
-                    portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
-                    #print("sold ", sym)
-                #skip the hold case because we just dont buy or sell hehe
-                end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
+            if(out[0] < -.5):
+                #print("selling")
+                portfolio.sell_coin(sym, self.hs.currentHists['VIX Close'][z])
+                #print("bought ", sym)
+            elif(out[0] > .5):
+                #print("buying")
+                portfolio.buy_coin(sym, self.hs.currentHists['VIX Close'][z])
+                #print("sold ", sym)
+            #skip the hold case because we just dont buy or sell hehe
+            end_prices[sym] = self.hs.currentHists['VIX Close'][self.epoch_len+rand_start]
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
         ft = result_val[0]
@@ -125,11 +127,23 @@ class PurpleTrader:
 
     def eval_fitness(self, genomes, config):
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
+        self.generation_index += 1
+        fitter = genomes[0]
+        fitter_val = 0.0 
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd("current_net.png")
-            g.fitness = self.evaluate(net, network, r_start)
+            net = network.create_phenotype_network_nd()
+            new_fit = self.evaluate(net, network, r_start, g)
+            '''
+            if(new_fit > fitter_val):
+                fitter = g
+                fitter_val = new_fit
+                with open('./champs/perpetual_champion_'+str(self.generation_index)+'.pkl', 'wb') as output:
+                    pickle.dump(fitter, output)
+                print("latest_saved")
+            '''
+            g.fitness = new_fit
 
 
 
@@ -147,8 +161,8 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(13)
-    winner = run_pop(task, 10)[0]
+    task = PurpleTrader(34)
+    winner = run_pop(task, 21)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
