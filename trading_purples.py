@@ -161,7 +161,7 @@ if __name__ == '__main__':
     cppn = neat.nn.FeedForwardNetwork.create(winner, task.config)
     network = ESNetwork(task.subStrate, cppn, task.params)
     with open('es_trade_god_cppn_3d.pkl', 'wb') as output:
-        pickle.dump(cppn, output)
+        pickle.dump(winner, output)
     #draw_net(cppn, filename="es_trade_god")
     winner_net = network.create_phenotype_network_nd('dabestest.png')  # This will also draw winner_net.
 

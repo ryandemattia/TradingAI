@@ -58,9 +58,9 @@ class PurpleTrader:
         for ix in range(1,self.inputs + 1):
             sign = sign *-1
             self.in_shapes.append((0.0-(sign*.005*ix), 0.0-(sign*.005*ix), 1.0))
-        self.out_shapes.append((0.0, 0.0, 1.0))
+        self.out_shapes.append((0.0, -1.0, -1.0))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 21
+        self.epoch_len = 55
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
         #num_leafs = 2**(len(self.node_names)-1)//2
@@ -135,14 +135,12 @@ class PurpleTrader:
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network_nd()
             new_fit = self.evaluate(net, network, r_start, g)
-            '''
             if(new_fit > fitter_val):
                 fitter = g
                 fitter_val = new_fit
                 with open('./champs/perpetual_champion_'+str(self.generation_index)+'.pkl', 'wb') as output:
                     pickle.dump(fitter, output)
                 print("latest_saved")
-            '''
             g.fitness = new_fit
 
 
@@ -167,10 +165,10 @@ if __name__ == '__main__':
 
     # Verify network output against training data.
     print('\nOutput:')
-    cppn = neat.nn.FeedForwardNetwork.create(winner, task.config)
+    [cppn] = create_cppn(winner, task.config, task.leaf_names, ['cppn_out'])
     network = ESNetwork(task.subStrate, cppn, task.params)
     with open('es_trade_god_cppn_3d.pkl', 'wb') as output:
-        pickle.dump(cppn, output)
+        pickle.dump(winner, output)
     #draw_net(cppn, filename="es_trade_god")
     winner_net = network.create_phenotype_network_nd('dabestest.png')  # This will also draw winner_net.
 
