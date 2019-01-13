@@ -23,7 +23,7 @@ class PurpleTrader:
 
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 3,
-            "max_depth": 4,
+            "max_depth": 3,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
             "iteration_level": 3,
@@ -45,23 +45,24 @@ class PurpleTrader:
 
     in_shapes = []
     out_shapes = []
-    def __init__(self, hist_depth):
+    def __init__(self, hist_depth, epoch_min, epoch_max):
         self.hs = HistWorker()
         self.hs.combine_frames()
+        self.epoch_min = epoch_min
+        self.epoch_max = epoch_max
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.currentHists["ZEC"])
         self.but_target = .1
-        self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
-        self.outputs = self.hs.hist_shaped.shape[0]
+        self.inputs = self.hs.hist_shaped[0].shape[1]
+        self.outputs = 1
         sign = 1
-        for ix in range(1,self.outputs+1):
+        for ix in range(1,self.inputs+1):
             sign = sign *-1
-            self.out_shapes.append((0.0-(sign*.005*ix), -1.0, -1.0))
-            for ix2 in range(1,(self.inputs//self.outputs)+1):
-                self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
+            self.in_shapes.append((0.0-(sign*.005*ix), -1.0, 0.0+(sign*.005*ix)))
+        self.out_shapes.append((0.0, 1.0, 0.0))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 89
+        #self.epoch_len = 89
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
         #num_leafs = 2**(len(self.node_names)-1)//2
@@ -89,6 +90,17 @@ class PurpleTrader:
         #print(active)
         return master_active
 
+    def get_single_symbol_epoch(self, end_idx, symbol_idx):
+        master_active = []
+        for x in range(0, self.hd):
+            try:
+                sym_data = self.hs.hist_shaped[symbol_idx][end_idx-x]
+                #print(len(sym_data))
+                master_active.append(sym_data.tolist())
+            except:
+                print('error')
+        return master_active
+
     def evaluate(self, network, es, rand_start, g, verbose=False):
         portfolio_start = .05
         portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
@@ -97,22 +109,21 @@ class PurpleTrader:
         sells = 0
         if(len(g.connections) > 0.0):
             for z in range(rand_start, rand_start+self.epoch_len):
-                active = self.get_one_epoch_input(z)
-                network.reset()
-                for n in range(1, self.hd+1):
-                    out = network.activate(active[self.hd-n])
-                #print(len(out))
-                rng = len(out)
-                #rng = iter(shuffle(rng))
-                for x in np.random.permutation(rng):
+                for x in np.random.permutation(self.outputs):
                     sym = self.hs.coin_dict[x]
+                    active = self.get_single_symbol_epoch(z, x)
+                    network.reset()
+                    for n in range(1, self.hd+1):
+                        out = network.activate(active[self.hd-n])
+                    #print(len(out))
+
                     #print(out[x])
                     #try:
-                    if(out[x] < -.5):
+                    if(out[0] < -.5):
                         #print("selling")
                         portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("bought ", sym)
-                    elif(out[x] > .5):
+                    elif(out[0] > .5):
                         #print("buying")
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("sold ", sym)
@@ -138,6 +149,7 @@ class PurpleTrader:
         return fitness
 
     def eval_fitness(self, genomes, config):
+        self.epoch_len = randint(self.epoch_min, self.epoch_max)
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         fitter = genomes[0]
         fitter_val = 0.0 
@@ -166,9 +178,9 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(89)
+    task = PurpleTrader(144, 55, 399)
     #print(task.trial_run())
-    winner = run_pop(task, 34)[0]
+    winner = run_pop(task, 55)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.

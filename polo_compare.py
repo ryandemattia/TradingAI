@@ -22,8 +22,8 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
-            "max_depth": 4,
+    params = {"initial_depth": 2,
+            "max_depth": 3,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
             "iteration_level": 3,
@@ -99,12 +99,15 @@ class PurpleTrader:
     def run_champs(self):
         genomes = os.listdir(os.path.join(os.path.dirname(__file__), 'champs'))
         fitness_data = {}
+        best_fitness = 0.0
         for g_ix in range(len(genomes)):
             genome = self.load_net('./champs/'+genomes[g_ix])
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
-            net = network.create_phenotype_network_nd('./champs_v_d3/genome_'+str(g_ix))
+            net = network.create_phenotype_network_nd('./champs_visualized2/genome_'+str(g_ix))
             fitness = self.evaluate(net, network, start, g_ix, genomes[g_ix])
+            if fitness > best_fitness:
+                best_genome = genome
 
     def evaluate(self, network, es, rand_start, g, p_name):
         portfolio_start = 1.0
@@ -113,7 +116,7 @@ class PurpleTrader:
         buys = 0
         sells = 0
         th = []
-        with open('./champs_hist_d3/'+p_name, 'w') as ft:
+        with open('./champs_hist_depth2/trade_hist'+p_name + '.txt', 'w') as ft:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
             for z in range(self.hd, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
@@ -122,7 +125,7 @@ class PurpleTrader:
                     out = network.activate(active[self.hd-n])
                 #print(len(out))
                 rng = len(out)
-
+                
                 for x in range(rng):
                     sym2 = self.hs.coin_dict[x]
                     end_prices[sym2] = self.hs.currentHists[sym2]['close'][self.hs.hist_full_size-1]
@@ -153,6 +156,13 @@ class PurpleTrader:
                             ft.write(str(portfolio.target_amount)+",")
                             ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
                             ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
+                    else:
+                        ft.write(str(self.hs.currentHists[sym]['date'][z]) + ",")
+                        ft.write(sym +",")
+                        ft.write('none,')
+                        ft.write(str(-1)+",")
+                        ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
+                        ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell heh
         result_val = portfolio.get_total_btc_value(end_prices)
@@ -163,6 +173,9 @@ class PurpleTrader:
     def solve(self, network):
         return self.evaluate(network) >= self.highest_returns
 
+    def report_back(self, portfolio, prices):
+        print(portfolio.get_total_btc_value(prices))
+        
     def trial_run(self):
         r_start = 0
         file = open("es_trade_god_cppn_3d.pkl",'rb')
