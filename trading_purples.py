@@ -12,6 +12,7 @@ from crypto_evolution import CryptoFolio
 from random import randint, shuffle
 # Local
 import neat.nn
+import neat.
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
@@ -139,23 +140,16 @@ class PurpleTrader:
 
     def eval_fitness(self, genomes, config):
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
-        fitter = genomes[0]
-        fitter_val = 0.0 
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network_nd()
             g.fitness = self.evaluate(net, network, r_start, g)
-            if(g.fitness > fitter_val):
-                fitter = g
-                fitter_val = g.fitness
-        with open('./champs/perpetual_champion_'+str(fitter.key)+'.pkl', 'wb') as output:
-            pickle.dump(fitter, output)
-        print("latest_saved")
-        return
+
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
     pop = neat.population.Population(task.config)
+    checkpoints = neat.Checkpointer(generation_interval=2, time_interval_seconds=None, filename_prefix='thot)-checkpoint-')
     stats = neat.statistics.StatisticsReporter()
     pop.add_reporter(stats)
     pop.add_reporter(neat.reporting.StdOutReporter(True))
@@ -167,7 +161,7 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(144)
+    task = PurpleTrader(5)
     #print(task.trial_run())
     winner = run_pop(task, 34)[0]
     print('\nBest genome:\n{!s}'.format(winner))
