@@ -131,7 +131,30 @@ class HistWorker:
                     print("error reading json")
         #self.get_data_for_astro()
 
+    def combine_frames(self):
+        length = 7992
+        fileNames = self.get_hist_files()
+        coin_and_hist_index = 0
+        for x in range(0,len(fileNames)):
+            df = self.get_data_frame(fileNames[x])
+            col_prefix = self.get_file_symbol(fileNames[x])
+            #df.drop("Unnamed: 0", 1)
+            #df = self.read_in_moon_data(df)
+            df = df.drop("Unnamed: 0", 1)
+            #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
 
+            as_array = np.array(df)
+
+            #print(len(as_array))
+            if(len(as_array) == length):
+                self.currentHists[col_prefix] = df
+                df = (df - df.mean()) / (df.max() - df.min())
+                as_array=np.array(df)
+                self.hist_shaped[coin_and_hist_index] = as_array
+                self.coin_dict[coin_and_hist_index] = col_prefix
+                coin_and_hist_index += 1
+        self.hist_shaped = pd.Series(self.hist_shaped)
+        
     def combine_frames(self):
         length = 7992
         fileNames = self.get_hist_files()
