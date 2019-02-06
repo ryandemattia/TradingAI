@@ -12,6 +12,7 @@ from crypto_evolution import CryptoFolio
 from random import randint, shuffle
 # Local
 import neat.nn
+import neat
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
@@ -22,7 +23,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
+    params = {"initial_depth": 2,
             "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
@@ -91,7 +92,13 @@ class PurpleTrader:
 
     def load_net(self, fname):
         f = open(fname,'rb')
-        g = pickle.load(f)
+        g = neat.Checkpointer().restore_checkpoint(fname)
+        bestFit = 0.0
+        for gx in g.population:
+            if g.population[gx].fitness != None:
+                if g.population[gx].fitness > bestFit:
+                    bestg = g.population[gx]
+        g = bestg
         f.close()
         [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
         self.cppn = the_cppn
@@ -106,8 +113,6 @@ class PurpleTrader:
             network = ESNetwork(self.subStrate, self.cppn, self.params)
             net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(g_ix))
             fitness = self.evaluate(net, network, start, g_ix, genomes[g_ix])
-            if fitness > best_fitness:
-                best_genome = genome
 
     def evaluate(self, network, es, rand_start, g, p_name):
         portfolio_start = 1.0
@@ -165,7 +170,7 @@ class PurpleTrader:
 
     def report_back(self, portfolio, prices):
         print(portfolio.get_total_btc_value(prices))
-        
+
     def trial_run(self):
         r_start = 0
         file = open("es_trade_god_cppn_3d.pkl",'rb')
@@ -178,7 +183,7 @@ class PurpleTrader:
     def eval_fitness(self, genomes, config):
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         fitter = genomes[0]
-        fitter_val = 0.0 
+        fitter_val = 0.0
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
@@ -193,5 +198,5 @@ class PurpleTrader:
 # Create the population and run the XOR task by providing the above fitness function.
 
 
-pt = PurpleTrader(144)
+pt = PurpleTrader(34)
 pt.run_champs()

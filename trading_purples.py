@@ -12,7 +12,7 @@ from crypto_evolution import CryptoFolio
 from random import randint, shuffle
 # Local
 import neat.nn
-import neat.
+import neat
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
@@ -23,7 +23,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
+    params = {"initial_depth": 2,
             "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
@@ -139,6 +139,7 @@ class PurpleTrader:
         return fitness
 
     def eval_fitness(self, genomes, config):
+        self.epoch_len = randint(21, 255)
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
