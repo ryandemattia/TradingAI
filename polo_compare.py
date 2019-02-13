@@ -104,11 +104,11 @@ class PurpleTrader:
         self.cppn = the_cppn
 
     def run_champs(self):
-        genomes = os.listdir(os.path.join(os.path.dirname(__file__), 'champs_d3'))
+        genomes = os.listdir(os.path.join(os.path.dirname(__file__), 'champ_gens'))
         fitness_data = {}
         best_fitness = 0.0
         for g_ix in range(len(genomes)):
-            genome = self.load_net('./champs_d3/'+genomes[g_ix])
+            genome = self.load_net('./champ_gens/'+genomes[g_ix])
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
             net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(g_ix))
@@ -158,6 +158,13 @@ class PurpleTrader:
                             ft.write(str(portfolio.target_amount)+",")
                             ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
                             ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
+                    else:
+                        ft.write(str(self.hs.currentHists[sym]['date'][z]) + ",")
+                        ft.write(sym +",")
+                        ft.write('none,')
+                        ft.write("0,")
+                        ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
+                        ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell heh
         result_val = portfolio.get_total_btc_value(end_prices)

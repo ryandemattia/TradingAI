@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 import numpy as np
 from poloniex import Poloniex
+from binance.client import Client
 from datetime import date, timedelta, datetime
 import os
 #from ephemGravityWrapper import gravity as gbaby
@@ -30,6 +31,7 @@ class HistWorker:
         #self.combine_frames()
         self.look_back = 666
         self.hist_full_size = 666*12
+        self.binance_client = Client("PBmYxFlOc2PSJb9KVSOUXLrsdqsG7bGTZ6suaTuTYRBCdMWo4Pn0d4Z93kp21Kzd","79uw7k4drsKFL66i8J3LB6KSq35O2W2PEydIgY0tHLwURhXemVCfsAY63XdN3G6A")
         return
 
     def get_hist_files(self):
@@ -82,6 +84,35 @@ class HistWorker:
         moon.drop("Unnamed: 0", 1)
         df = df.drop('Unnamed: 0', 1).set_index("date")
         return moon.join(df, on="date")
+
+    #BEGIN BINANCE METHODS
+
+    def pull_binance_symbols(self):
+        sym_list = []
+        for x in self.binance_client.get_products()["data"]:
+            sym_list.append(x["symbol"])
+        return sym_list
+
+    def get_binance_hist_frame(self, symbol):
+        frame = hs.binance_client.get_historical_klines(symbol, Client.KLINE_INTERVAL_30MINUTE, "1 May, 2018", "1 Jan, 2019")
+        for x in range(len(frame)):
+            frame[x] = frame[x][:6]
+        frame = pd.DataFrame(frame, columns=["date", "open", "high", "low", "close", "volume"])
+        print(frame.head())
+        return frame
+    
+    def write_binance_training_files(self, syms):
+        for s in range(len(syms)):
+            frame = self.get_binance_hist_frame(syms[s])
+            frame['avg_vol_3'] = frame['volume'].rolling(3).mean()
+            frame['avg_vol_13'] = frame['volume'].rolling(13).mean()
+            frame['avg_vol_34'] = frame['volume'].rolling(34).mean()
+            frame['avg_close_3'] = frame['close'].rolling(3).mean()
+            frame['avg_close_13'] = frame['close'].rolling(13).mean()
+            frame['avg_close_34'] = frame['close'].rolling(34).mean()
+            frame.fillna(value=-99999, inplace=True)
+            frame.to_csv("./binance_hist/"+syms[s]+"_hist.txt", encoding="utf-8")
+
 
     def pull_polo_live(self, lb):
         polo = Poloniex()
@@ -240,3 +271,6 @@ class HistWorker:
             main = main.join(df_list[i])
         return main
         '''
+hs = HistWorker()
+sym = hs.pull_binance_symbols()
+hs.write_binance_training_files(sym)

@@ -1,0 +1,1 @@
+,date,open,high,low,close,volume,avg_vol_3,avg_vol_13,avg_vol_34,avg_close_3,avg_close_13,avg_close_34
