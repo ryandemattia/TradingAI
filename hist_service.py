@@ -7,6 +7,7 @@ from poloniex import Poloniex
 from binance.client import Client
 from datetime import date, timedelta, datetime
 import os
+from statistics import mode
 #from ephemGravityWrapper import gravity as gbaby
 '''
 As can be expected by this point, you will notice that
@@ -52,6 +53,9 @@ class HistWorker:
 
     def get_data_frame(self, fname):
         frame = pd.read_csv('./histories/'+fname) # timestamps will but used as index
+        return frame
+    def get_binance_frames(self, fname):
+        frame = pd.read_csv('./binance_hist/'+fname) # timestamps will but used as index
         return frame
 
     def get_live_data_frame(self, fname):
@@ -166,25 +170,32 @@ class HistWorker:
                     print("error reading json")
         #self.get_data_for_astro()
 
-    def combine_frames(self):
-        length = 7992
-        fileNames = self.get_hist_files()
+    def combine_binance_frames(self):
+        fileNames = self.get_binance_hist_files()
         coin_and_hist_index = 0
-        for x in range(0,len(fileNames)):
-            df = self.get_data_frame(fileNames[x])
+        file_lens = []
+        for y in range(0,len(fileNames)):
+            df = self.get_binance_frames(fileNames[y])
+            df_len = len(df)
+            #print(df.head())
+            file_lens.append(df_len)
+        mode_len = mode(file_lens)
+        for x in range(0, len(fileNames)):
             col_prefix = self.get_file_symbol(fileNames[x])
             #df.drop("Unnamed: 0", 1)
             #df = self.read_in_moon_data(df)
-            df = df.drop("Unnamed: 0", 1)
+            #df = df.drop("Unnamed: 0", 1)
             #df.rename(columns = lambda x: col_prefix+'_'+x, inplace=True)
 
             as_array = np.array(df)
 
             #print(len(as_array))
-            if(len(as_array) == length):
-                self.currentHists[col_prefix] = df
-                df = (df - df.mean()) / (df.max() - df.min())
-                as_array=np.array(df)
+            if(len(as_array) == mode_len):
+                #print(as_array)
+                self.currentHists[col_prefix] = df.copy()
+                #print(self.currentHists[col_prefix].head())
+                norm_df = (df - df.mean()) / (df.max() - df.min())
+                as_array=np.array(norm_df)
                 self.hist_shaped[coin_and_hist_index] = as_array
                 self.coin_dict[coin_and_hist_index] = col_prefix
                 coin_and_hist_index += 1
@@ -277,4 +288,7 @@ class HistWorker:
         '''
 hs = HistWorker()
 sym = hs.pull_binance_symbols()
-hs.write_binance_training_files(sym)
+hs.combine_binance_frames()
+for i in hs.currentHists.keys():
+    print(hs.currentHists[i].head())
+
