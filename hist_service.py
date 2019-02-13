@@ -38,6 +38,10 @@ class HistWorker:
         histFiles = os.listdir(os.path.join(os.path.dirname(__file__), 'histories'))
         return histFiles
 
+    def get_binance_hist_files(self):
+        binanceFiles = os.listdir(os.path.join(os.path.dirname(__file__), 'binance_hist'))
+        return binanceFiles
+
     def get_live_files(self):
         histFiles = os.listdir(os.path.join(os.path.dirname(__file__), 'paper'))
         return histFiles
