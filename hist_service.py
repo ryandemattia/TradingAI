@@ -69,6 +69,9 @@ class HistWorker:
     def get_file_symbol(self, f):
         f = f.split("_", 2)
         return f[1]
+    def get_binance_symbol(self, f):
+        f = f.split("_", 2)
+        return f[0]
     '''
     def get_data_for_astro(self):
         data = {}
@@ -106,7 +109,6 @@ class HistWorker:
         for x in range(len(frame)):
             frame[x] = frame[x][:6]
         frame = pd.DataFrame(frame, columns=["date", "open", "high", "low", "close", "volume"])
-        print(frame.head())
         return frame
     
     def write_binance_training_files(self, syms):
@@ -180,8 +182,10 @@ class HistWorker:
             #print(df.head())
             file_lens.append(df_len)
         mode_len = mode(file_lens)
+        print(mode_len)
         for x in range(0, len(fileNames)):
-            col_prefix = self.get_file_symbol(fileNames[x])
+            df = self.get_binance_frames(fileNames[y])
+            col_prefix = self.get_binance_symbol(fileNames[x])
             #df.drop("Unnamed: 0", 1)
             #df = self.read_in_moon_data(df)
             #df = df.drop("Unnamed: 0", 1)
@@ -190,7 +194,7 @@ class HistWorker:
             as_array = np.array(df)
 
             #print(len(as_array))
-            if(len(as_array) == mode_len):
+            if(len(as_array) == mode_len and col_prefix[-3:] == "BTC"):
                 #print(as_array)
                 self.currentHists[col_prefix] = df.copy()
                 #print(self.currentHists[col_prefix].head())
@@ -289,6 +293,5 @@ class HistWorker:
 hs = HistWorker()
 sym = hs.pull_binance_symbols()
 hs.combine_binance_frames()
-for i in hs.currentHists.keys():
-    print(hs.currentHists[i].head())
+print(len(hs.currentHists))
 
