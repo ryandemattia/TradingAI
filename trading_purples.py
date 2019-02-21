@@ -115,6 +115,7 @@ class PurpleTrader:
                         #print("bought ", sym)
                     elif(out[x] > .5):
                         #print("buying")
+                        portfolio.target_amount = .05 + out[x] - .45
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
