@@ -17,17 +17,18 @@ import requests
 from pytorch_neat.cppn import create_cppn
 # Local
 import neat.nn
+import neat
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
 from pureples.es_hyperneat.es_hyperneat_torch import ESNetwork
 #polo = Poloniex('key', 'secret')
-
 key = ""
 secret = ""
+
 class LiveTrader:
     params = {"initial_depth": 2,
-            "max_depth": 3,
+            "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
             "iteration_level": 3,
@@ -63,9 +64,15 @@ class LiveTrader:
         self.poloTrader()
 
     def load_net(self):
-        file = open("./champs_depth2/perpetual_champion_512.pkl",'rb')
-        g = pickle.load(file)
-        file.close()
+        #file = open("./champ_gens/thot-checkpoint-13",'rb')
+        g = neat.Checkpointer.restore_checkpoint("./champ_gens/thot-checkpoint-25")
+        best_fit = 0.0
+        for gx in g.population:
+            if g.population[gx].fitness != None:
+                if g.population[gx].fitness > best_fit:
+                    bestg = g.population[gx]
+        g = bestg
+        #file.close()
         [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
         self.cppn = the_cppn
 
@@ -186,6 +193,7 @@ class LiveTrader:
                     self.sell_coin('BTC_'+sym, price)
                 elif(out[x] > .5):
                     print("buying: ", sym)
+                    self.target_percent = .1 + out[x] - .45
                     p = self.get_price('BTC_'+sym)
                     price = p*1.01
                     self.buy_coin('BTC_'+sym, price)
@@ -331,5 +339,5 @@ class PaperTrader:
 
 
 
-LiveTrader(7200, .1, 144)
-#PaperTrader(7200, 1.0, 89)
+#LiveTrader(7200, .34, 34)
+PaperTrader(7200, .1, 34)

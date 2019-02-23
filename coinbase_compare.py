@@ -18,7 +18,7 @@ from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
 from pureples.es_hyperneat.es_hyperneat_torch import ESNetwork
 # Local
-class PurpleTrader:
+class CoinBaseComparer:
 
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
@@ -187,5 +187,5 @@ class PurpleTrader:
 # Create the population and run the XOR task by providing the above fitness function.
 
 
-pt = PurpleTrader(89)
+pt = CoinBaseComparer(89)
 pt.run_champs()

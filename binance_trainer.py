@@ -121,7 +121,7 @@ class PurpleTrader:
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
                     end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
-                if(portfolio.get_total_btc_value_no_sell(end_prices)[0] > portfolio.start *1.05):
+                if(portfolio.get_total_btc_value_no_sell(end_prices)[0] > portfolio.start *1.1):
                     portfolio.start = portfolio.get_total_btc_value(end_prices)[0]
             result_val = portfolio.get_total_btc_value(end_prices)
             print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
