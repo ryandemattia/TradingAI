@@ -32,7 +32,7 @@ class HistWorker:
         #self.combine_frames()
         self.look_back = 666
         self.hist_full_size = 666*12
-        self.binance_client = Client("PBmYxFlOc2PSJb9KVSOUXLrsdqsG7bGTZ6suaTuTYRBCdMWo4Pn0d4Z93kp21Kzd","79uw7k4drsKFL66i8J3LB6KSq35O2W2PEydIgY0tHLwURhXemVCfsAY63XdN3G6A")
+        self.binance_client = Client()
         return
 
     def get_hist_files(self):
@@ -268,6 +268,42 @@ class HistWorker:
             main = main.join(df_list[i])
         return main
         '''
+    def combine_polo_frames_vol_sorted(self, restrict_val=0):
+        length = 7992
+        fileNames = self.get_hist_files()
+        coin_and_hist_index = 0
+        file_lens = []
+        for y in range(0,len(fileNames)):
+            df = self.get_binance_frames(fileNames[y])
+            df_len = len(df)
+            #print(df.head())
+            file_lens.append(df_len)
+        mode_len = mode(file_lens)
+        print(mode_len)
+        vollist = []
+        prefixes = []
+        for x in range(0, len(fileNames)):
+            df = self.get_data_frame(fileNames[x])
+            col_prefix = self.get_file_symbol(fileNames[x])
+            as_array = np.array(df)
+            if(len(as_array) == mode_len):
+                #print(as_array)
+                prefixes.append(col_prefix)
+                self.currentHists[col_prefix] = df
+                vollist.append(df['volume'][0])
+        if restrict_val != 0:
+            vollist = np.argsort(vollist)[-restrict_val:][::-1]
+        vollist = np.argsort(vollist)[::-1]
+        for ix in vollist:
+            #print(self.currentHists[col_prefix].head())
+            df = self.currentHists[prefixes[ix]].copy()
+            norm_df = (df - df.mean()) / (df.max() - df.min())
+            as_array=np.array(norm_df)
+            self.hist_shaped[coin_and_hist_index] = as_array
+            self.coin_dict[coin_and_hist_index] = col_prefix
+            coin_and_hist_index += 1
+        self.hist_shaped = pd.Series(self.hist_shaped)
+
 
     def combine_live_frames(self, length):
         fileNames = self.get_live_files()
@@ -324,8 +360,5 @@ class HistWorker:
             main = main.join(df_list[i])
         return main
         '''
-hs = HistWorker()
-sym = hs.pull_binance_symbols()
-hs.combine_binance_frames()
-print(len(hs.currentHists))
+
 
