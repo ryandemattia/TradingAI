@@ -23,7 +23,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2,
+    params = {"initial_depth": 3,
             "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
@@ -121,9 +121,10 @@ class PurpleTrader:
         buys = 0
         sells = 0
         th = []
+        port_ref = portfolio_start
         with open('./champs_histd3/trade_hist'+p_name + '.txt', 'w') as ft:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
-            for z in range(self.hd, self.hs.hist_full_size -1):
+            for z in range(self.hs.hist_full_size-377, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
                 network.reset()
                 for n in range(1, self.hd+1):
@@ -152,6 +153,7 @@ class PurpleTrader:
                     elif(out[x] > .5):
                         did_buy = portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                         if did_buy:
+                            portfolio.target_amount = out[x]-.45
                             ft.write(str(self.hs.currentHists[sym]['date'][z]) + ",")
                             ft.write(sym +",")
                             ft.write('buy,')
@@ -162,10 +164,14 @@ class PurpleTrader:
                         ft.write(str(self.hs.currentHists[sym]['date'][z]) + ",")
                         ft.write(sym +",")
                         ft.write('none,')
-                        ft.write("0,")
+                        ft.write("0.0,")
                         ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
                         ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
                         #print("sold ", sym)
+                    new_ref = portfolio.get_total_btc_value_no_sell(end_prices)[0]
+                    if(new_ref > 1.05 * port_ref):
+                        port_ref = portfolio.get_total_btc_value_no_sell(end_prices)[0]
+                        portfolio.start = port_ref
                     #skip the hold case because we just dont buy or sell heh
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2], p_name)

@@ -16,7 +16,7 @@ class CryptoFolio:
     def __init__(self, start_amount, coins, save_trades=False):
         self.ledger['BTC'] = start_amount
         for ix in coins:
-            self.ledger[coins[ix]] = 0.0
+            self.ledger[ix] = 0.0
         self.start = start_amount
         self.hs = hs.HistWorker()
         self.save_trades = save_trades

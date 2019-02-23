@@ -184,19 +184,22 @@ class HistWorker:
         mode_len = mode(file_lens)
         print(mode_len)
         vollist = []
+        prefixes = []
         for x in range(0, len(fileNames)):
             df = self.get_binance_frames(fileNames[y])
             col_prefix = self.get_binance_symbol(fileNames[x])
+            as_array = np.array(df)
             if(len(as_array) == mode_len and col_prefix[-3:] == "BTC"):
                 #print(as_array)
+                prefixes.append(col_prefix)
                 self.currentHists[col_prefix] = df
-                vollist.append(df['vol'][0])
+                vollist.append(df['volume'][0])
         if restrict_val != 0:
             vollist = np.argsort(vollist)[-restrict_val:][::-1]
         vollist = np.argsort(vollist)[::-1]
         for ix in vollist:
             #print(self.currentHists[col_prefix].head())
-            df = self.currentHists[ix].copy()
+            df = self.currentHists[prefixes[ix]].copy()
             norm_df = (df - df.mean()) / (df.max() - df.min())
             as_array=np.array(norm_df)
             self.hist_shaped[coin_and_hist_index] = as_array

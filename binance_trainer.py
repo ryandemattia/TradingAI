@@ -48,7 +48,7 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_binance_frames()
+        self.hs.combine_binance_frames_vol_sorted(20)
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.currentHists[list(self.hs.currentHists.keys())[0]])
@@ -72,7 +72,7 @@ class PurpleTrader:
         #self.leaf_names.append('bias')
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
-            folio.ledger[k] = 0
+            folio.ledger[k] = 0.0
 
     def get_one_epoch_input(self,end_idx):
         master_active = []
@@ -92,7 +92,8 @@ class PurpleTrader:
 
     def evaluate(self, network, es, rand_start, g, verbose=False):
         portfolio_start = 1.0
-        portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
+        portfolio = CryptoFolio(portfolio_start, list(self.hs.currentHists.keys()))
+        #self.set_portfolio_keys(portfolio)
         end_prices = {}
         buys = 0
         sells = 0
@@ -105,8 +106,8 @@ class PurpleTrader:
                 #print(len(out))
                 rng = len(out)
                 #rng = iter(shuffle(rng))
-                for x in np.random.permutation(rng):
-                    sym = self.hs.coin_dict[x]
+                for x in range(rng):
+                    sym = list(self.hs.currentHists.keys())[x]
                     #print(out[x])
                     #try:
                     if(out[x] < -.5):
@@ -115,11 +116,13 @@ class PurpleTrader:
                         #print("bought ", sym)
                     elif(out[x] > .5):
                         #print("buying")
-                        portfolio.target_amount = out - .45
+                        portfolio.target_amount = out[x] - .45
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
                     end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
+                if(portfolio.get_total_btc_value_no_sell(end_prices)[0] > portfolio.start *1.05):
+                    portfolio.start = portfolio.get_total_btc_value(end_prices)[0]
             result_val = portfolio.get_total_btc_value(end_prices)
             print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
             ft = result_val[0]
@@ -140,7 +143,7 @@ class PurpleTrader:
         return fitness
 
     def eval_fitness(self, genomes, config):
-        self.epoch_len = randint(21, 255)
+        self.epoch_len = randint(144, 377)
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
@@ -164,7 +167,7 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(5)
+    task = PurpleTrader(21)
     #print(task.trial_run())
     winner = run_pop(task, 34)[0]
     print('\nBest genome:\n{!s}'.format(winner))
@@ -179,7 +182,7 @@ if __name__ == '__main__':
     winner_net = network.create_phenotype_network_nd('dabestest.png')  # This will also draw winner_net.
 
     # Save CPPN if wished reused and draw it to file.
-    draw_net(cppn, filename="es_trade_god")
+
 
 
     '''
