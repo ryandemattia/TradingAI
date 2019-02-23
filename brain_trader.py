@@ -240,7 +240,7 @@ class PaperTrader:
             self.leaf_names.append('leaf_one_'+str(l))
             self.leaf_names.append('leaf_two_'+str(l))
         self.load_net()
-
+        print(self.hs.coin_dict)
         self.poloTrader()
 
     def refresh_data(self):
@@ -248,9 +248,15 @@ class PaperTrader:
         self.hs.combine_live_frames(89)
 
     def load_net(self):
-        file = open("./champs/perpetual_champion.pkl",'rb')
-        g = pickle.load(file)
-        file.close()
+        #file = open("./champ_gens/thot-checkpoint-13",'rb')
+        g = neat.Checkpointer.restore_checkpoint("./champ_gens/thot-checkpoint-25")
+        best_fit = 0.0
+        for gx in g.population:
+            if g.population[gx].fitness != None:
+                if g.population[gx].fitness > best_fit:
+                    bestg = g.population[gx]
+        g = bestg
+        #file.close()
         [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
         self.cppn = the_cppn
 
@@ -312,17 +318,21 @@ class PaperTrader:
         for x in np.random.permutation(rng):
             sym = self.hs.coin_dict[x]
             #print(out[x])
-            if(out[x] < -.5):
-                p = self.get_price('BTC_'+sym)
-                print("selling: ", sym)
-                self.folio.sell_coin(sym, p)
-            elif(out[x] > .5):
-                p = self.get_price('BTC_'+sym)
-                print("buying: ", sym)
-                self.folio.buy_coin(sym, p)
+            try:
+                if(out[x] < -.5):
+                    p = self.get_price('BTC_'+sym)
+                    print("selling: ", sym)
+                    self.folio.sell_coin(sym, p)
+                elif(out[x] > .5):
+                    p = self.get_price('BTC_'+sym)
+                    print("buying: ", sym)
+                    self.folio.buy_coin(sym, p)
+            except:
+                print("error buying or selling")
             #skip the hold case because we just dont buy or sell hehe
             end_prices[sym] = self.hs.hist_shaped[x][len(self.hs.hist_shaped[x])-1][2]
-
+        if(self.folio.get_total_btc_value_no_sell(end_prices)[0] > self.folio.start *1.1):
+            self.folio.start = self.folio.get_total_btc_value(end_prices)[0]
         if datetime.now() >= self.end_ts:
             port_info = self.folio.get_total_btc_value(end_prices)
             print("total val: ", port_info[0], "btc balance: ", port_info[1])

@@ -143,7 +143,7 @@ class PurpleTrader:
         return fitness
 
     def eval_fitness(self, genomes, config):
-        self.epoch_len = randint(144, 377)
+        self.epoch_len = randint(500, 1500)
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
