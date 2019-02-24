@@ -234,7 +234,7 @@ class PaperTrader:
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = self.hs.hist_shaped.shape[0]
         self.make_shapes()
-        self.folio = CryptoFolio(start_amount, self.hs.coin_dict)
+        self.folio = CryptoFolio(start_amount, list(self.hs.currentHists.keys()))
         self.leaf_names = []
         for l in range(len(self.in_shapes[0])):
             self.leaf_names.append('leaf_one_'+str(l))
@@ -283,9 +283,9 @@ class PaperTrader:
     def get_current_balance(self):
         #self.refresh_data()
         c_prices = {}
-        for s in self.folio.ledger.keys():
+        for s in self.hs.currentHists.keys():
             if s != 'BTC':
-                c_prices[s] = self.hs.currentHists[s]['close'][len(self.hs.currentHists[s]['close'])-1]
+                c_prices[s] = self.hs.currentHists[s]['close'].iloc[-1]
         return self.folio.get_total_btc_value_no_sell(c_prices)
 
     def get_one_bar_input_2d(self,end_idx=10):
@@ -330,7 +330,7 @@ class PaperTrader:
             except:
                 print("error buying or selling")
             #skip the hold case because we just dont buy or sell hehe
-            end_prices[sym] = self.hs.hist_shaped[x][len(self.hs.hist_shaped[x])-1][2]
+            end_prices[sym] = self.hs.currentHists[sym]["close"].iloc[-1]
         if(self.folio.get_total_btc_value_no_sell(end_prices)[0] > self.folio.start *1.1):
             self.folio.start = self.folio.get_total_btc_value(end_prices)[0]
         if datetime.now() >= self.end_ts:
@@ -350,4 +350,4 @@ class PaperTrader:
 
 
 #LiveTrader(7200, .34, 34)
-PaperTrader(7200, .1, 34)
+PaperTrader(7200, 1.0 , 34)
