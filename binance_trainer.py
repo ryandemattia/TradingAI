@@ -23,12 +23,12 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
+    params = {"initial_depth": 2,
             "max_depth": 3,
-            "variance_threshold": 0.00013,
-            "band_threshold": 0.00013,
+            "variance_threshold": 0.0013,
+            "band_threshold": 0.0013,
             "iteration_level": 3,
-            "division_threshold": 0.00013,
+            "division_threshold": 0.0013,
             "max_weight": 5.0,
             "activation": "tanh"}
 
@@ -103,9 +103,8 @@ class PurpleTrader:
                 network.reset()
                 for n in range(1, self.hd+1):
                     out = network.activate(active[self.hd-n])
-                for x in len(out):
+                for x in range(len(out)):
                     signals.append(out[x])
-                
                 #rng = iter(shuffle(rng))
                 for x in np.argsort(signals)[::-1]:
                     sym = self.hs.coin_dict[x]
@@ -153,7 +152,7 @@ class PurpleTrader:
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
     pop = neat.population.Population(task.config)
-    checkpoints = neat.Checkpointer(generation_interval=2, time_interval_seconds=None, filename_prefix='thot-checkpoint-')
+    checkpoints = neat.Checkpointer(generation_interval=2, time_interval_seconds=None, filename_prefix='tradegod-checkpoint-')
     stats = neat.statistics.StatisticsReporter()
     pop.add_reporter(stats)
     pop.add_reporter(checkpoints)

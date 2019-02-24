@@ -32,7 +32,7 @@ class HistWorker:
         #self.combine_frames()
         self.look_back = 666
         self.hist_full_size = 666*12
-        self.binance_client = Client("PBmYxFlOc2PSJb9KVSOUXLrsdqsG7bGTZ6suaTuTYRBCdMWo4Pn0d4Z93kp21Kzd","79uw7k4drsKFL66i8J3LB6KSq35O2W2PEydIgY0tHLwURhXemVCfsAY63XdN3G6A")
+        self.binance_client = Client("A")
         return
 
     def get_hist_files(self):
