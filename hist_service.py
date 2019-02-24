@@ -32,7 +32,7 @@ class HistWorker:
         #self.combine_frames()
         self.look_back = 666
         self.hist_full_size = 666*12
-        self.binance_client = Client()
+        self.binance_client = Client("PBmYxFlOc2PSJb9KVSOUXLrsdqsG7bGTZ6suaTuTYRBCdMWo4Pn0d4Z93kp21Kzd","79uw7k4drsKFL66i8J3LB6KSq35O2W2PEydIgY0tHLwURhXemVCfsAY63XdN3G6A")
         return
 
     def get_hist_files(self):
@@ -274,7 +274,7 @@ class HistWorker:
         coin_and_hist_index = 0
         file_lens = []
         for y in range(0,len(fileNames)):
-            df = self.get_binance_frames(fileNames[y])
+            df = self.get_data_frame(fileNames[y])
             df_len = len(df)
             #print(df.head())
             file_lens.append(df_len)

@@ -48,7 +48,7 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_frames()
+        self.hs.combine_polo_frames_vol_sorted()
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.currentHists["ETH"])
@@ -108,7 +108,7 @@ class PurpleTrader:
         fitness_data = {}
         best_fitness = 0.0
         for g_ix in range(len(genomes)):
-            genome = self.load_net('./champ_gens/'+genomes[g_ix])
+            genome = self.load_net('./binance_champs/'+genomes[g_ix])
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
             net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(g_ix))
