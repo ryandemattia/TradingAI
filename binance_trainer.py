@@ -109,7 +109,7 @@ class PurpleTrader:
                 #rng = iter(shuffle(rng))
                 sorted_shit = np.argsort(signals)[::-1]
                 #print(sorted_shit, len(sorted_shit))
-                print(len(sorted_shit), len(key_list))
+                #print(len(sorted_shit), len(key_list))
                 for x in sorted_shit:
                     sym = self.hs.coin_dict[x]
                     #print(out[x])
