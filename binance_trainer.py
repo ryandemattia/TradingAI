@@ -107,7 +107,7 @@ class PurpleTrader:
                     signals.append(out[x])
                 
                 #rng = iter(shuffle(rng))
-                for x in np.argsort(signals):
+                for x in np.argsort(signals)[::-1]:
                     sym = self.hs.coin_dict[x]
                     #print(out[x])
                     #try:
@@ -115,7 +115,6 @@ class PurpleTrader:
                         #print("selling")
                         portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("bought ", sym)
-                for x in np.argsort(signals)[::-1]:
                     if(out[x] > .5):
                         #print("buying")
                         portfolio.target_amount = .1 + (out[x] * .1)
