@@ -48,13 +48,13 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_binance_frames()
+        self.hs.combine_binance_frames_vol_sorted()
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.currentHists[list(self.hs.currentHists.keys())[0]])
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
-        self.outputs = self.hs.hist_shaped.shape[0]
+        self.outputs = len(self.hs.currentHists.keys())
         sign = 1
         for ix in range(1,self.outputs+1):
             sign = sign *-1
@@ -92,21 +92,25 @@ class PurpleTrader:
 
     def evaluate(self, network, es, rand_start, g, verbose=False):
         portfolio_start = 1.0
+        key_list = list(self.hs.currentHists.keys())
         portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
         end_prices = {}
-        signals = []
         buys = 0
         sells = 0
         if(len(g.connections) > 0.0):
             for z in range(rand_start, rand_start+self.epoch_len):
                 active = self.get_one_epoch_input(z)
+                signals = []
                 network.reset()
                 for n in range(1, self.hd+1):
                     out = network.activate(active[self.hd-n])
                 for x in range(len(out)):
                     signals.append(out[x])
                 #rng = iter(shuffle(rng))
-                for x in np.argsort(signals)[::-1]:
+                sorted_shit = np.argsort(signals)[::-1]
+                #print(sorted_shit, len(sorted_shit))
+                print(len(sorted_shit), len(key_list))
+                for x in sorted_shit:
                     sym = self.hs.coin_dict[x]
                     #print(out[x])
                     #try:
