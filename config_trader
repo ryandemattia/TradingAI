@@ -4,18 +4,18 @@
 fitness_criterion     = max
 fitness_threshold     = 3069466
 pop_size              = 144
-reset_on_extinction   = True
+reset_on_extinction   = False
 
 
 [DefaultGenome]
 # node activation options
-activation_default      = sin
+activation_default      = tanh
 activation_mutate_rate  = 0.55
 activation_options      = sin tanh sigmoid gauss
 
 # node aggregation options
 aggregation_default     = sum
-aggregation_mutate_rate = 0.89
+aggregation_mutate_rate = 0.55
 aggregation_options     = sum
 
 # node bias options
