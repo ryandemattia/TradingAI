@@ -57,11 +57,12 @@ class PurpleTrader:
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = len(self.hs.currentHists.keys())
         sign = 1
-        for ix in range(1,self.outputs+1):
-            sign = sign *-1
-            self.out_shapes.append((0.0-(sign*.05*ix), -1.0, -1.0))
-            for ix2 in range(1,(self.inputs//self.outputs)+1):
-                self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
+        x_increment = 1.0 / self.outputs
+        y_increment = 1.0 / len(self.hs.hist_shaped[0])
+        for ix in range(self.outputs):
+            self.out_shapes.append((1.0-(ix*x_increment), -1.0, 0.0))
+            for ix2 in range(len(self.hs.hist_shaped[0])):
+                self.in_shapes.append((-1.0+(ix*x_increment)), 1.0, 1.0 - (ix2*y_increment)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 144
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
