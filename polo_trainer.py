@@ -102,10 +102,13 @@ class PurpleTrader:
                 network.reset()
                 for n in range(1, self.hd+1):
                     out = network.activate(active[self.hd-n])
-                #print(len(out))
-                rng = len(out)
+                for x in range(len(out)):
+                    signals.append(out[x])
                 #rng = iter(shuffle(rng))
-                for x in np.random.permutation(rng):
+                sorted_shit = np.argsort(signals)[::-1]
+                #print(sorted_shit, len(sorted_shit))
+                #print(len(sorted_shit), len(key_list))
+                for x in sorted_shit:
                     sym = self.hs.coin_dict[x]
                     #print(out[x])
                     #try:
@@ -113,13 +116,14 @@ class PurpleTrader:
                         #print("selling")
                         portfolio.sell_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("bought ", sym)
-                    elif(out[x] > .5):
+                    if(out[x] > .5):
                         #print("buying")
-                        portfolio.target_amount = .05 + out[x] - .45
+                        portfolio.target_amount = .1 + (out[x] * .1)
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
-                    end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
+                    if(z == self.epoch_len+rand_start):
+                        end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
             result_val = portfolio.get_total_btc_value(end_prices)
             print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
             ft = result_val[0]
