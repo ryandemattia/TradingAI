@@ -198,7 +198,6 @@ class HistWorker:
             vollist = np.argsort(vollist)[-restrict_val:][::-1]
         vollist = np.argsort(vollist)[::-1]
         for ix in vollist:
-            #print(self.currentHists[col_prefix].head())
             df = self.currentHists[prefixes[ix]].copy()
             norm_df = (df - df.mean()) / (df.max() - df.min())
             as_array=np.array(norm_df)

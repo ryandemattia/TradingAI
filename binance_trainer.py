@@ -124,7 +124,8 @@ class PurpleTrader:
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
-                    end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
+                    if(z == self.epoch_len+rand_start):
+                        end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
             result_val = portfolio.get_total_btc_value(end_prices)
             print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
             ft = result_val[0]
