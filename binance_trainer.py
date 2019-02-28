@@ -62,7 +62,7 @@ class PurpleTrader:
         for ix in range(self.outputs):
             self.out_shapes.append((1.0-(ix*x_increment), -1.0, 0.0))
             for ix2 in range(len(self.hs.hist_shaped[0])):
-                self.in_shapes.append((-1.0+(ix*x_increment)), 1.0, 1.0 - (ix2*y_increment)))
+                self.in_shapes.append((-1.0+(ix*x_increment)), 1.0, 1.0 - (ix2*y_increment))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 144
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
@@ -153,7 +153,7 @@ class PurpleTrader:
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd()
+            net = network.create_phenotype_network_nd("training_now.png")
             g.fitness = self.evaluate(net, network, r_start, g)
 
 # Create the population and run the XOR task by providing the above fitness function.
