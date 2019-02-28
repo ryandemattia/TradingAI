@@ -12,6 +12,7 @@ from crypto_evolution import CryptoFolio
 from random import randint, shuffle
 # Local
 import neat.nn
+import neat.ctrnn 
 import neat
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
@@ -23,13 +24,13 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2,
+    params = {"initial_depth": 3,
             "max_depth": 3,
-            "variance_threshold": 0.0013,
-            "band_threshold": 0.0013,
+            "variance_threshold": 0.013,
+            "band_threshold": 0.013,
             "iteration_level": 3,
-            "division_threshold": 0.0013,
-            "max_weight": 5.0,
+            "division_threshold": 0.013,
+            "max_weight": 7.0,
             "activation": "tanh"}
 
 
@@ -58,7 +59,7 @@ class PurpleTrader:
         sign = 1
         for ix in range(1,self.outputs+1):
             sign = sign *-1
-            self.out_shapes.append((0.0-(sign*.005*ix), -1.0, -1.0))
+            self.out_shapes.append((0.0-(sign*.05*ix), -1.0, -1.0))
             for ix2 in range(1,(self.inputs//self.outputs)+1):
                 self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
@@ -156,7 +157,7 @@ class PurpleTrader:
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
     pop = neat.population.Population(task.config)
-    checkpoints = neat.Checkpointer(generation_interval=2, time_interval_seconds=None, filename_prefix='tradegod-checkpoint-')
+    checkpoints = neat.Checkpointer(generation_interval=1, time_interval_seconds=None, filename_prefix='tradegod-checkpoint-')
     stats = neat.statistics.StatisticsReporter()
     pop.add_reporter(stats)
     pop.add_reporter(checkpoints)
@@ -169,7 +170,7 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(5)
+    task = PurpleTrader(21)
     #print(task.trial_run())
     winner = run_pop(task, 34)[0]
     print('\nBest genome:\n{!s}'.format(winner))
