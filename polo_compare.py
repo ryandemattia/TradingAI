@@ -105,7 +105,7 @@ class PurpleTrader:
         self.cppn = the_cppn
 
     def run_champs(self):
-        genomes = os.listdir(os.path.join(os.path.dirname(__file__), 'champ_gens'))
+        genomes = os.listdir(os.path.join(os.path.dirname(__file__), 'binance_champs'))
         fitness_data = {}
         best_fitness = 0.0
         for g_ix in range(len(genomes)):
@@ -117,11 +117,8 @@ class PurpleTrader:
 
     def evaluate(self, network, es, rand_start, g, p_name):
         portfolio_start = 1.0
-        portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
+        portfolio = CryptoFolio(portfolio_start, list(self.hs.currentHists.keys()))
         end_prices = {}
-        buys = 0
-        sells = 0
-        th = []
         port_ref = portfolio_start
         with open('./champs_histd3/trade_hist'+p_name + '.txt', 'w') as ft:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
@@ -133,11 +130,11 @@ class PurpleTrader:
                 #print(len(out))
                 rng = len(out)
                 for x in range(rng):
-                    sym2 = self.hs.coin_dict[x]
+                    sym2 = list(self.hs.currentHists.keys())[x]
                     end_prices[sym2] = self.hs.currentHists[sym2]['close'][self.hs.hist_full_size-1]
                 #rng = iter(shuffle(rng))
                 for x in np.random.permutation(rng):
-                    sym = self.hs.coin_dict[x]
+                    sym = list(self.hs.currentHists.keys())[x]
                     #print(out[x])
                     #try:
                     if(out[x] < -.5):
