@@ -26,10 +26,10 @@ class PurpleTrader:
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 2,
             "max_depth": 3,
-            "variance_threshold": 0.013,
-            "band_threshold": 0.013,
+            "variance_threshold": 0.0013,
+            "band_threshold": 0.0013,
             "iteration_level": 3,
-            "division_threshold": 0.013,
+            "division_threshold": 0.0013,
             "max_weight": 7.0,
             "activation": "tanh"}
 
@@ -52,17 +52,17 @@ class PurpleTrader:
         self.hs.combine_binance_frames_vol_sorted()
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
-        self.end_idx = len(self.hs.currentHists[list(self.hs.currentHists.keys())[0]])
+        self.end_idx = len(self.hs.hist_shaped[0])
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = len(self.hs.currentHists.keys())
         sign = 1
         x_increment = 1.0 / self.outputs
-        y_increment = 1.0 / len(self.hs.hist_shaped[0])
+        y_increment = 1.0 / len(self.hs.hist_shaped[0][0])
         for ix in range(self.outputs):
             self.out_shapes.append((1.0-(ix*x_increment), -1.0, 0.0))
-            for ix2 in range(len(self.hs.hist_shaped[0])):
-                self.in_shapes.append((-1.0+(ix*x_increment)), 1.0, 1.0 - (ix2*y_increment))
+            for ix2 in range(len(self.hs.hist_shaped[0][0])):
+                self.in_shapes.append((-1.0+(ix*x_increment), 1.0, 1.0 - (ix2*y_increment)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 144
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
@@ -153,7 +153,7 @@ class PurpleTrader:
         for idx, g in genomes:
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd("training_now.png")
+            net = network.create_phenotype_network_nd()
             g.fitness = self.evaluate(net, network, r_start, g)
 
 # Create the population and run the XOR task by providing the above fitness function.
