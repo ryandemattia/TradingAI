@@ -26,10 +26,10 @@ class PurpleTrader:
     # ES-HyperNEAT specific parameters.
     params = {"initial_depth": 2,
             "max_depth": 3,
-            "variance_threshold": 0.0013,
-            "band_threshold": 0.0013,
+            "variance_threshold": 0.00013,
+            "band_threshold": 0.00013,
             "iteration_level": 3,
-            "division_threshold": 0.0013,
+            "division_threshold": 0.00013,
             "max_weight": 7.0,
             "activation": "tanh"}
 
@@ -62,7 +62,7 @@ class PurpleTrader:
         for ix in range(self.outputs):
             self.out_shapes.append((1.0-(ix*x_increment), -1.0, 0.0))
             for ix2 in range(len(self.hs.hist_shaped[0][0])):
-                self.in_shapes.append((-1.0+(ix*x_increment), 1.0, 1.0 - (ix2*y_increment)))
+                self.in_shapes.append((-1.0+(ix*x_increment), 1.0 - (ix2*y_increment), 1.0))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 144
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
@@ -126,7 +126,7 @@ class PurpleTrader:
                         portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
-                    if(z == self.epoch_len+rand_start):
+                    if(z > self.epoch_len+rand_start-2):
                         end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
             result_val = portfolio.get_total_btc_value(end_prices)
             print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
@@ -158,7 +158,7 @@ class PurpleTrader:
 
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
-    pop = neat.population.Population(task.config)
+    pop = neat.Checkpointer().restore_checkpoint("tradegod-checkpoint-0")
     checkpoints = neat.Checkpointer(generation_interval=1, time_interval_seconds=None, filename_prefix='tradegod-checkpoint-')
     stats = neat.statistics.StatisticsReporter()
     pop.add_reporter(stats)

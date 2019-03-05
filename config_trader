@@ -24,7 +24,7 @@ bias_init_stdev         = 1.0
 bias_max_value          = 34.0
 bias_min_value          = -34.0
 bias_mutate_power       = 0.55
-bias_mutate_rate        = 0.89
+bias_mutate_rate        = 0.55
 bias_replace_rate       = 0.2
 
 # genome compatibility options
@@ -32,19 +32,19 @@ compatibility_disjoint_coefficient = 1.0
 compatibility_weight_coefficient   = 0.5
 
 # connection add/remove rates
-conn_add_prob           = 0.5
-conn_delete_prob        = 0.5
+conn_add_prob           = 0.55
+conn_delete_prob        = 0.34
 
 # connection enable options
 enabled_default         = True
-enabled_mutate_rate     = 0.013
+enabled_mutate_rate     = 0.13
 
 feed_forward            = True
 initial_connection      = full_direct
 
 # node add/remove rates
-node_add_prob           = 0.2
-node_delete_prob        = 0.2
+node_add_prob           = 0.21
+node_delete_prob        = 0.13
 
 # network parameters
 num_hidden              = 7
