@@ -186,7 +186,7 @@ class HistWorker:
         vollist = []
         prefixes = []
         for x in range(0, len(fileNames)):
-            df = self.get_binance_frames(fileNames[y])
+            df = self.get_binance_frames(fileNames[x])
             col_prefix = self.get_binance_symbol(fileNames[x])
             as_array = np.array(df)
             if(len(as_array) == mode_len and col_prefix[-3:] == "BTC"):
@@ -361,4 +361,5 @@ class HistWorker:
         return main
         '''
 
-
+hs = HistWorker()
+hs.combine_binance_frames_vol_sorted()

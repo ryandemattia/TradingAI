@@ -24,7 +24,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2,
+    params = {"initial_depth": 3,
             "max_depth": 3,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
@@ -135,30 +135,23 @@ class PurpleTrader:
             ft = 0.0
         return ft
 
-    def solve(self, network):
-        return self.evaluate(network) >= self.highest_returns
-
-    def trial_run(self):
-        r_start = 0
-        file = open("es_trade_god_cppn_3d.pkl",'rb')
-        [cppn] = pickle.load(file)
-        network = ESNetwork(self.subStrate, cppn, self.params)
-        net = network.create_phenotype_network_nd()
-        fitness = self.evaluate(net, network, r_start)
-        return fitness
 
     def eval_fitness(self, genomes, config):
         self.epoch_len = randint(21, 255)
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
+        genome_phenotype_dict = {}
         for idx, g in genomes:
+            #print(g)
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network_nd()
-            g.fitness = self.evaluate(net, network, r_start, g)
+            genome_phenotype_dict[idx] = net
+        runner = neat.ParallelEvaluator(4, self.evaluate)
+        runner.evaluate(genome_phenotype_dict.values, config)
 
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
-    pop = neat.Checkpointer().restore_checkpoint("tradegod-checkpoint-0")
+    pop = neat.population.Population(task.config)
     checkpoints = neat.Checkpointer(generation_interval=1, time_interval_seconds=None, filename_prefix='tradegod-checkpoint-')
     stats = neat.statistics.StatisticsReporter()
     pop.add_reporter(stats)

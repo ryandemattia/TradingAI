@@ -61,7 +61,7 @@ class PurpleTrader:
         for ix in range(self.outputs):
             self.out_shapes.append((1.0-(ix*x_increment), -1.0, 0.0))
             for ix2 in range(len(self.hs.hist_shaped[0])):
-                self.in_shapes.append((-1.0+(ix*x_increment)), 1.0, 1.0 - (ix2*y_increment)))
+                self.in_shapes.append((-1.0+(ix*x_increment), 1.0, 1.0 - (ix2*y_increment)))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         self.epoch_len = 144
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
@@ -124,16 +124,17 @@ class PurpleTrader:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
             for z in range(self.hs.hist_full_size-377, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
+                signals = []
                 network.reset()
                 for n in range(1, self.hd+1):
                     out = network.activate(active[self.hd-n])
-                #print(len(out))
-                rng = len(out)
-                for x in range(rng):
+                for x in range(len(out)):
+                    signals.append(out[x])
                     sym2 = list(self.hs.currentHists.keys())[x]
                     end_prices[sym2] = self.hs.currentHists[sym2]['close'][self.hs.hist_full_size-1]
+                sorted_shit = np.argsort(signals)[::-1]
                 #rng = iter(shuffle(rng))
-                for x in np.random.permutation(rng):
+                for x in sorted_shit:
                     sym = list(self.hs.currentHists.keys())[x]
                     #print(out[x])
                     #try:
@@ -151,7 +152,7 @@ class PurpleTrader:
                     elif(out[x] > .5):
                         did_buy = portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
                         if did_buy:
-                            portfolio.target_amount = out[x]-.45
+                            portfolio.target_amount = .1 + (out[x] * .1)
                             ft.write(str(self.hs.currentHists[sym]['date'][z]) + ",")
                             ft.write(sym +",")
                             ft.write('buy,')

@@ -151,7 +151,7 @@ class PurpleTrader:
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network_nd()
             g.fitness = self.evaluate(net, network, r_start, g)
-
+        return
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
     pop = neat.population.Population(task.config)
