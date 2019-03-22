@@ -24,7 +24,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
+    params = {"initial_depth": 2,
             "max_depth": 3,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
@@ -49,13 +49,26 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_binance_frames_vol_sorted()
+        self.hs.combine_binance_frames_vol_sorted(5)
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.hist_shaped[0])
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = len(self.hs.currentHists.keys())
+        self.epoch_len = 144
+        #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
+        self.leaf_names = []
+        #num_leafs = 2**(len(self.node_names)-1)//2
+        self.set_leaf_names()
+
+    def set_leaf_names(self):
+        for l in range(len(self.in_shapes[0])):
+            self.leaf_names.append('leaf_one_'+str(l))
+            self.leaf_names.append('leaf_two_'+str(l))
+        #self.leaf_names.append('bias')
+    
+    def set_substrate(self):
         sign = 1
         x_increment = 1.0 / self.outputs
         y_increment = 1.0 / len(self.hs.hist_shaped[0][0])
@@ -64,14 +77,7 @@ class PurpleTrader:
             for ix2 in range(len(self.hs.hist_shaped[0][0])):
                 self.in_shapes.append((-1.0+(ix*x_increment), 1.0 - (ix2*y_increment), 1.0))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 144
-        #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
-        self.leaf_names = []
-        #num_leafs = 2**(len(self.node_names)-1)//2
-        for l in range(len(self.in_shapes[0])):
-            self.leaf_names.append('leaf_one_'+str(l))
-            self.leaf_names.append('leaf_two_'+str(l))
-        #self.leaf_names.append('bias')
+
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
             folio.ledger[k] = 0
