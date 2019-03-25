@@ -11,13 +11,13 @@ from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 from random import randint, shuffle
 # Local
-import neat.nn
 import neat.ctrnn 
 import neat
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
 from pureples.es_hyperneat.es_hyperneat_torch import ESNetwork
+from NTree import nDimensionTree
 # Local
 class PurpleTrader:
 
@@ -60,7 +60,11 @@ class PurpleTrader:
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
         #num_leafs = 2**(len(self.node_names)-1)//2
+        self.tree = nDimensionTree((0.0, 0.0, 0.0), 1.0, 1)
+        self.tree.divide_childrens()
+        self.set_substrate()
         self.set_leaf_names()
+
 
     def set_leaf_names(self):
         for l in range(len(self.in_shapes[0])):
@@ -73,9 +77,14 @@ class PurpleTrader:
         x_increment = 1.0 / self.outputs
         y_increment = 1.0 / len(self.hs.hist_shaped[0][0])
         for ix in range(self.outputs):
-            self.out_shapes.append((1.0-(ix*x_increment), -1.0, 0.0))
+            self.out_shapes.append((1.0-(ix*x_increment), 0.0, -1.0))
             for ix2 in range(len(self.hs.hist_shaped[0][0])):
-                self.in_shapes.append((-1.0+(ix*x_increment), 1.0 - (ix2*y_increment), 1.0))
+                if(ix2 >= len(self.tree.cs)-1):
+                    treex = ix2 - len(self.tree.cs)-1
+                else:
+                    treex = ix2
+                center = self.tree.cs[treex]
+                self.in_shapes.append((center.coord[0]+(ix*x_increment), center.coord[1] - (ix2*y_increment), center.coord[2]+.5))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
 
     def set_portfolio_keys(self, folio):
@@ -153,7 +162,7 @@ class PurpleTrader:
             net = network.create_phenotype_network_nd()
             genome_phenotype_dict[idx] = net
         runner = neat.ParallelEvaluator(4, self.evaluate)
-        runner.evaluate(genome_phenotype_dict.values, config)
+        runner.evaluate(list(genome_phenotype_dict.values()), config)
 
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
