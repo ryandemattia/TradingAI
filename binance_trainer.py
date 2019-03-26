@@ -154,15 +154,15 @@ class PurpleTrader:
     def eval_fitness(self, genomes, config):
         self.epoch_len = randint(21, 255)
         r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
-        genome_phenotype_dict = {}
+        genome_phenotype_dict = []
         for idx, g in genomes:
             #print(g)
             [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
             network = ESNetwork(self.subStrate, cppn, self.params)
             net = network.create_phenotype_network_nd()
-            genome_phenotype_dict[idx] = net
+            genome_phenotype_dict.append(net)
         runner = neat.ParallelEvaluator(4, self.evaluate)
-        runner.evaluate(list(genome_phenotype_dict.values()), config)
+        runner.evaluate(genome_phenotype_dict, config)
 
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
