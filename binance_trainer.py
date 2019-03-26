@@ -42,14 +42,14 @@ class PurpleTrader:
     start_idx = 0
     highest_returns = 0
     portfolio_list = []
-
+    rand_start = 0
 
 
     in_shapes = []
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_binance_frames_vol_sorted(5)
+        self.hs.combine_binance_frames_vol_sorted()
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.hist_shaped[0])
@@ -107,7 +107,11 @@ class PurpleTrader:
         #print(active)
         return master_active
 
-    def evaluate(self, network, es, rand_start, g, verbose=False):
+    def evaluate(self, g, config):
+        rand_start = self.rand_start
+        [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
+        net = ESNetwork(self.subStrate, cppn, self.params)
+        network = net.create_phenotype_network_nd()
         portfolio_start = 1.0
         key_list = list(self.hs.currentHists.keys())
         portfolio = CryptoFolio(portfolio_start, self.hs.coin_dict)
@@ -153,16 +157,9 @@ class PurpleTrader:
 
     def eval_fitness(self, genomes, config):
         self.epoch_len = randint(21, 255)
-        r_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
-        genome_phenotype_dict = []
-        for idx, g in genomes:
-            #print(g)
-            [cppn] = create_cppn(g, config, self.leaf_names, ['cppn_out'])
-            network = ESNetwork(self.subStrate, cppn, self.params)
-            net = network.create_phenotype_network_nd()
-            genome_phenotype_dict.append(net)
+        self.rand_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         runner = neat.ParallelEvaluator(4, self.evaluate)
-        runner.evaluate(genome_phenotype_dict, config)
+        runner.evaluate(genomes, config)
 
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
