@@ -104,8 +104,12 @@ class PurpleTrader:
         [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
         self.cppn = the_cppn
 
+    def load_net_easy(self, g):
+        [the_cppn] = create_cppn(g, self.config, self.leaf_names, [cppn_out])
+        self.cppn = the_cppn
+        
     def run_champs(self):
-        genomes = os.listdir(os.path.join(os.path.dirname(__file__), 'binance_champs'))
+        genomes = neat.Checkpointer.restore_checkpoint("tradegod-checkpoint-25").population
         fitness_data = {}
         best_fitness = 0.0
         for g_ix in range(len(genomes)):
