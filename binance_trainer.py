@@ -49,13 +49,14 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_binance_frames_vol_sorted()
+        self.hs.combine_binance_frames_vol_sorted(10)
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.hist_shaped[0])
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
-        self.outputs = len(self.hs.currentHists.keys())
+        self.outputs = len(self.hs.coin_dict)
+        print(self.inputs, self.outputs)
         self.epoch_len = 144
         #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
@@ -64,7 +65,7 @@ class PurpleTrader:
         self.tree.divide_childrens()
         self.set_substrate()
         self.set_leaf_names()
-
+        
 
     def set_leaf_names(self):
         for l in range(len(self.in_shapes[0])):
@@ -78,7 +79,7 @@ class PurpleTrader:
         y_increment = 1.0 / len(self.hs.hist_shaped[0][0])
         for ix in range(self.outputs):
             self.out_shapes.append((1.0-(ix*x_increment), 0.0, -1.0))
-            for ix2 in range(len(self.hs.hist_shaped[0][0])):
+            for ix2 in range(self.inputs//self.outputs):
                 if(ix2 >= len(self.tree.cs)-1):
                     treex = ix2 - len(self.tree.cs)-1
                 else:
