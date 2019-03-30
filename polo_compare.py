@@ -105,15 +105,15 @@ class PurpleTrader:
         self.cppn = the_cppn
 
     def load_net_easy(self, g):
-        [the_cppn] = create_cppn(g, self.config, self.leaf_names, [cppn_out])
+        [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
         self.cppn = the_cppn
         
     def run_champs(self):
-        genomes = neat.Checkpointer.restore_checkpoint("tradegod-checkpoint-25").population
+        genomes = neat.Checkpointer.restore_checkpoint("tradegod-checkpoint-0").population
         fitness_data = {}
         best_fitness = 0.0
-        for g_ix in range(len(genomes)):
-            genome = self.load_net('./binance_champs/'+genomes[g_ix])
+        for g_ix in genomes:
+            self.load_net_easy(genomes[g_ix])
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
             net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(g_ix))
@@ -126,7 +126,7 @@ class PurpleTrader:
         port_ref = portfolio_start
         with open('./champs_histd3/trade_hist'+p_name + '.txt', 'w') as ft:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
-            for z in range(self.hs.hist_full_size-377, self.hs.hist_full_size -1):
+            for z in range(34, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
                 signals = []
                 network.reset()

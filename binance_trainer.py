@@ -157,9 +157,13 @@ class PurpleTrader:
 
 
     def eval_fitness(self, genomes, config):
+<<<<<<< HEAD
         self.epoch_len = randint(255, 399)
+=======
+        self.epoch_len = randint(244, 399)
+>>>>>>> 54b0afe06aa86c56e2ece0ce39f9a3a3394f9442
         self.rand_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
-        runner = neat.ParallelEvaluator(4, self.evaluate)
+        runner = neat.ParallelEvaluator(16, self.evaluate)
         runner.evaluate(genomes, config)
 
 # Create the population and run the XOR task by providing the above fitness function.
@@ -178,7 +182,7 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(21)
+    task = PurpleTrader(89)
     #print(task.trial_run())
     winner = run_pop(task, 34)[0]
     print('\nBest genome:\n{!s}'.format(winner))
