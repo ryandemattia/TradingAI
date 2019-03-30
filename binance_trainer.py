@@ -24,7 +24,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2,
+    params = {"initial_depth": 3,
             "max_depth": 3,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
@@ -49,7 +49,7 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_binance_frames_vol_sorted(10)
+        self.hs.combine_binance_frames_vol_sorted(8)
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.hist_shaped[0])
@@ -157,7 +157,7 @@ class PurpleTrader:
 
 
     def eval_fitness(self, genomes, config):
-        self.epoch_len = randint(21, 255)
+        self.epoch_len = randint(255, 399)
         self.rand_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         runner = neat.ParallelEvaluator(4, self.evaluate)
         runner.evaluate(genomes, config)
