@@ -17,6 +17,7 @@ import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
 from pureples.es_hyperneat.es_hyperneat_torch import ESNetwork
+from NTree import nDimensionTree
 # Local
 class PurpleTrader:
 
@@ -55,22 +56,34 @@ class PurpleTrader:
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = self.hs.hist_shaped.shape[0]
-        sign = 1
-        x_increment = 1.0 / self.outputs
-        y_increment = 1.0 / len(self.hs.hist_shaped[0])
-        for ix in range(self.outputs):
-            self.out_shapes.append((1.0-(ix*x_increment), -1.0, 0.0))
-            for ix2 in range(len(self.hs.hist_shaped[0])):
-                self.in_shapes.append((-1.0+(ix*x_increment), 1.0, 1.0 - (ix2*y_increment)))
-        self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 144
-        #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
         #num_leafs = 2**(len(self.node_names)-1)//2
+        self.tree = nDimensionTree((0.0, 0.0, 0.0), 1.0, 1)
+        self.tree.divide_childrens()
+        self.set_substrate()
+        self.set_leaf_names()
+        
+
+    def set_leaf_names(self):
         for l in range(len(self.in_shapes[0])):
             self.leaf_names.append('leaf_one_'+str(l))
             self.leaf_names.append('leaf_two_'+str(l))
         #self.leaf_names.append('bias')
+    def set_substrate(self):
+        sign = 1
+        x_increment = 1.0 / self.outputs
+        y_increment = 1.0 / len(self.hs.hist_shaped[0][0])
+        for ix in range(self.outputs):
+            self.out_shapes.append((1.0-(ix*x_increment), 0.0, -1.0))
+            for ix2 in range(self.inputs//self.outputs):
+                if(ix2 >= len(self.tree.cs)-1):
+                    treex = ix2 - len(self.tree.cs)-1
+                else:
+                    treex = ix2
+                center = self.tree.cs[treex]
+                self.in_shapes.append((center.coord[0]+(ix*x_increment), center.coord[1] - (ix2*y_increment), center.coord[2]+.5))
+        self.subStrate = Substrate(self.in_shapes, self.out_shapes)
+
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
             folio.ledger[k] = 0
@@ -109,7 +122,7 @@ class PurpleTrader:
         self.cppn = the_cppn
         
     def run_champs(self):
-        genomes = neat.Checkpointer.restore_checkpoint("tradegod-checkpoint-0").population
+        genomes = neat.Checkpointer.restore_checkpoint("./binance_champs/tradegod-checkpoint-5").population
         fitness_data = {}
         best_fitness = 0.0
         for g_ix in genomes:
