@@ -49,10 +49,10 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_polo_frames_vol_sorted()
+        self.hs.combine_binance_frames_vol_sorted(13)
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
-        self.end_idx = len(self.hs.currentHists["ETH"])
+        self.end_idx = len(self.hs.hist_shaped[0])
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = self.hs.hist_shaped.shape[0]
@@ -62,6 +62,7 @@ class PurpleTrader:
         self.tree.divide_childrens()
         self.set_substrate()
         self.set_leaf_names()
+        self.epoch_len = hist_depth
         
 
     def set_leaf_names(self):
@@ -125,19 +126,21 @@ class PurpleTrader:
         genomes = neat.Checkpointer.restore_checkpoint("./binance_champs/tradegod-checkpoint-5").population
         fitness_data = {}
         best_fitness = 0.0
+        count = 0
         for g_ix in genomes:
             self.load_net_easy(genomes[g_ix])
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
             net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(g_ix))
-            fitness = self.evaluate(net, network, start, g_ix, genomes[g_ix])
+            fitness = self.evaluate(net, network, start, genomes[g_ix], g_ix)
+            count += 1
 
     def evaluate(self, network, es, rand_start, g, p_name):
         portfolio_start = 1.0
         portfolio = CryptoFolio(portfolio_start, list(self.hs.currentHists.keys()))
         end_prices = {}
         port_ref = portfolio_start
-        with open('./champs_histd3/trade_hist'+p_name + '.txt', 'w') as ft:
+        with open('./champs_histd3/trade_hist'+ str(p_name) + '.txt', 'w') as ft:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
             for z in range(34, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
@@ -150,6 +153,7 @@ class PurpleTrader:
                     sym2 = list(self.hs.currentHists.keys())[x]
                     end_prices[sym2] = self.hs.currentHists[sym2]['close'][self.hs.hist_full_size-1]
                 sorted_shit = np.argsort(signals)[::-1]
+                rebalance = portfolio_start
                 #rng = iter(shuffle(rng))
                 for x in sorted_shit:
                     sym = list(self.hs.currentHists.keys())[x]
@@ -185,10 +189,12 @@ class PurpleTrader:
                         ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
                         #print("sold ", sym)
                 new_ref = portfolio.get_total_btc_value_no_sell(end_prices)[0]
+                '''
                 if(new_ref > 1.05 * port_ref):
                     port_ref = portfolio.get_total_btc_value_no_sell(end_prices)[0]
                     portfolio.start = port_ref
                     #skip the hold case because we just dont buy or sell heh
+                '''
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2], p_name)
         ft = result_val[0]

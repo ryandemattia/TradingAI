@@ -6,7 +6,7 @@ def pull_in_file(f_name):
 
 
 if __name__ == '__main__':
-    thist = pull_in_file('trade_histthot-checkpoint-33.txt')
+    thist = pull_in_file('trade_hist497.txt')
     print(list(thist))
     print(thist.head())
 
