@@ -49,7 +49,7 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_binance_frames_vol_sorted(13)
+        self.hs.combine_polo_frames_vol_sorted()
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.hist_shaped[0])
@@ -123,7 +123,7 @@ class PurpleTrader:
         self.cppn = the_cppn
         
     def run_champs(self):
-        genomes = neat.Checkpointer.restore_checkpoint("./binance_champs/tradegod-checkpoint-5").population
+        genomes = neat.Checkpointer.restore_checkpoint("./binance_champs_2/tradegod-checkpoint-11").population
         fitness_data = {}
         best_fitness = 0.0
         count = 0
@@ -195,7 +195,7 @@ class PurpleTrader:
                     portfolio.start = port_ref
                     #skip the hold case because we just dont buy or sell heh
                 '''
-                
+
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2], p_name)
         ft = result_val[0]
@@ -234,5 +234,5 @@ class PurpleTrader:
 # Create the population and run the XOR task by providing the above fitness function.
 
 
-pt = PurpleTrader(34)
+pt = PurpleTrader(89)
 pt.run_champs()
