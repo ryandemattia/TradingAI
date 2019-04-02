@@ -24,8 +24,8 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
-            "max_depth": 3,
+    params = {"initial_depth": 2,
+            "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
             "iteration_level": 3,
@@ -157,11 +157,9 @@ class PurpleTrader:
 
 
     def eval_fitness(self, genomes, config):
-<<<<<<< HEAD
-        self.epoch_len = randint(255, 399)
-=======
-        self.epoch_len = randint(244, 399)
->>>>>>> 54b0afe06aa86c56e2ece0ce39f9a3a3394f9442
+        min_batch_size = (self.hs.hist_full_size-self.hd) // 5
+        max_batch_size = (self.hs.hist_full_size-self.hd) // 2
+        self.epoch_len = randint(min_batch_size, max_batch_size)
         self.rand_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         runner = neat.ParallelEvaluator(16, self.evaluate)
         runner.evaluate(genomes, config)
@@ -169,7 +167,7 @@ class PurpleTrader:
 # Create the population and run the XOR task by providing the above fitness function.
 def run_pop(task, gens):
     pop = neat.population.Population(task.config)
-    checkpoints = neat.Checkpointer(generation_interval=1, time_interval_seconds=None, filename_prefix='tradegod-checkpoint-')
+    checkpoints = neat.Checkpointer(generation_interval=1, time_interval_seconds=None, filename_prefix='./binance_champs_2/tradegod-checkpoint-')
     stats = neat.statistics.StatisticsReporter()
     pop.add_reporter(stats)
     pop.add_reporter(checkpoints)
@@ -184,7 +182,7 @@ def run_pop(task, gens):
 if __name__ == '__main__':
     task = PurpleTrader(89)
     #print(task.trial_run())
-    winner = run_pop(task, 34)[0]
+    winner = run_pop(task, 55)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
