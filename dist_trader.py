@@ -37,8 +37,8 @@ class DeepThotNodeMaster(object):
         clusterPeers,
         from_checkpoint
     ):
-        self.clusterName = clusterName
-        self.clusterDescription = clusterDescription
-        self.clusterPeers = clusterPeers
-        self.from_checkpoint = from_checkpoint
+    self.clusterName = clusterName
+    self.clusterDescription = clusterDescription
+    self.clusterPeers = clusterPeers
+    self.from_checkpoint = from_checkpoint
 
