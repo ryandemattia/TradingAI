@@ -20,4 +20,3 @@ class JsonThotPersist:
             return json.load(jfile)
 
 jsonPersister = JsonThotPersist()
-print(jsonPersister.loadFromJson())
