@@ -11,7 +11,7 @@ from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 from random import randint, shuffle
 # Local
-import neat.ctrnn 
+import neat.ctrnn
 import neat
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
@@ -30,7 +30,7 @@ class PurpleTrader:
             "band_threshold": 0.00013,
             "iteration_level": 3,
             "division_threshold": 0.00013,
-            "max_weight": 7.0,
+            "max_weight": 3.0,
             "activation": "tanh"}
 
 
@@ -49,7 +49,7 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_binance_frames_vol_sorted(10)
+        self.hs.combine_binance_frames_vol_sorted(13)
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.hist_shaped[0])
@@ -65,14 +65,14 @@ class PurpleTrader:
         self.tree.divide_childrens()
         self.set_substrate()
         self.set_leaf_names()
-        
+
 
     def set_leaf_names(self):
         for l in range(len(self.in_shapes[0])):
             self.leaf_names.append('leaf_one_'+str(l))
             self.leaf_names.append('leaf_two_'+str(l))
         #self.leaf_names.append('bias')
-    
+
     def set_substrate(self):
         sign = 1
         x_increment = 1.0 / self.outputs
@@ -157,7 +157,7 @@ class PurpleTrader:
 
 
     def eval_fitness(self, genomes, config):
-        self.epoch_len = randint(21, 255)
+        self.epoch_len = self.hs.hist_full_size - self.hd
         self.rand_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
         runner = neat.ParallelEvaluator(4, self.evaluate)
         runner.evaluate(genomes, config)
@@ -178,9 +178,9 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(21)
+    task = PurpleTrader(8)
     #print(task.trial_run())
-    winner = run_pop(task, 34)[0]
+    winner = run_pop(task, 89)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.

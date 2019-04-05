@@ -17,19 +17,20 @@ import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
 from pureples.es_hyperneat.es_hyperneat_torch import ESNetwork
+from NTree import nDimensionTree
 # Local
 class PurpleTrader:
 
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
-            "max_depth": 4,
+    params = {"initial_depth": 2,
+            "max_depth": 3,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
             "iteration_level": 3,
             "division_threshold": 0.00013,
-            "max_weight": 5.0,
+            "max_weight": 7.0,
             "activation": "tanh"}
 
 
@@ -55,21 +56,34 @@ class PurpleTrader:
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = self.hs.hist_shaped.shape[0]
-        sign = 1
-        x_increment = 1.0 / self.outputs
-        y_increment = 1.0 / len(self.hs.hist_shaped[0])
-        for ix in range(self.outputs):
-            self.out_shapes.append((1.0-(ix*x_increment), -1.0, 0.0))
-            for ix2 in range(len(self.hs.hist_shaped[0])):
-                self.in_shapes.append((-1.0+(ix*x_increment), 1.0, 1.0 - (ix2*y_increment)))
-        self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-        self.epoch_len = 144
-        #self.node_names = ['x1', 'y1', 'z1', 'x2', 'y2', 'z2', 'weight']
         self.leaf_names = []
         #num_leafs = 2**(len(self.node_names)-1)//2
+        self.tree = nDimensionTree((0.0, 0.0, 0.0), 1.0, 1)
+        self.tree.divide_childrens()
+        self.set_substrate()
+        self.set_leaf_names()
+        self.epoch_len = hist_depth
+
+
+    def set_leaf_names(self):
         for l in range(len(self.in_shapes[0])):
             self.leaf_names.append('leaf_one_'+str(l))
             self.leaf_names.append('leaf_two_'+str(l))
+        #self.leaf_names.append('bias')
+    def set_substrate(self):
+        sign = 1
+        x_increment = 1.0 / self.outputs
+        y_increment = 1.0 / len(self.hs.hist_shaped[0][0])
+        for ix in range(self.outputs):
+            self.out_shapes.append((1.0-(ix*x_increment), 0.0, -1.0))
+            for ix2 in range(self.inputs//self.outputs):
+                if(ix2 >= len(self.tree.cs)-1):
+                    treex = ix2 - len(self.tree.cs)-1
+                else:
+                    treex = ix2
+                center = self.tree.cs[treex]
+                self.in_shapes.append((center.coord[0]+(ix*x_increment), center.coord[1] - (ix2*y_increment), center.coord[2]+.5))
+        self.subStrate = Substrate(self.in_shapes, self.out_shapes)
         #self.leaf_names.append('bias')
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
@@ -105,26 +119,26 @@ class PurpleTrader:
         self.cppn = the_cppn
 
     def load_net_easy(self, g):
-        [the_cppn] = create_cppn(g, self.config, self.leaf_names, [cppn_out])
+        [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
         self.cppn = the_cppn
-        
+
     def run_champs(self):
-        genomes = neat.Checkpointer.restore_checkpoint("tradegod-checkpoint-25").population
+        genomes = neat.Checkpointer.restore_checkpoint("tradegod-checkpoint-88").population
         fitness_data = {}
         best_fitness = 0.0
-        for g_ix in range(len(genomes)):
-            genome = self.load_net('./binance_champs/'+genomes[g_ix])
+        for g_ix in genomes:
+            self.load_net_easy(genomes[g_ix])
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
             net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(g_ix))
-            fitness = self.evaluate(net, network, start, g_ix, genomes[g_ix])
+            fitness = self.evaluate(net, network, start, genomes[g_ix], g_ix)
 
     def evaluate(self, network, es, rand_start, g, p_name):
         portfolio_start = 1.0
         portfolio = CryptoFolio(portfolio_start, list(self.hs.currentHists.keys()))
         end_prices = {}
         port_ref = portfolio_start
-        with open('./champs_histd3/trade_hist'+p_name + '.txt', 'w') as ft:
+        with open('./champs_histd3/trade_hist'+ str(p_name) + '.txt', 'w') as ft:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
             for z in range(self.hs.hist_full_size-377, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
