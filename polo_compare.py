@@ -24,7 +24,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 3,
+    params = {"initial_depth": 2,
             "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
@@ -195,12 +195,12 @@ class PurpleTrader:
                         ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
                         #print("sold ", sym)
                 new_ref = portfolio.get_total_btc_value_no_sell(end_prices)[0]
-                '''
+                
                 if(new_ref > 1.10 * port_ref):
                     port_ref = portfolio.get_total_btc_value_no_sell(end_prices)[0]
                     portfolio.start = port_ref
                     #skip the hold case because we just dont buy or sell heh
-                '''
+                
 
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2], p_name)
@@ -240,5 +240,5 @@ class PurpleTrader:
 # Create the population and run the XOR task by providing the above fitness function.
 
 
-pt = PurpleTrader(89)
+pt = PurpleTrader(8)
 pt.run_champs()

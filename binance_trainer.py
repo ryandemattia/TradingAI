@@ -157,10 +157,10 @@ class PurpleTrader:
 
 
     def eval_fitness(self, genomes, config):
-        min_batch_size = (self.hs.hist_full_size-self.hd) // 5
-        max_batch_size = (self.hs.hist_full_size-self.hd) // 2
+        max_batch_size = (self.hs.hist_full_size-self.hd) // 5
+        min_batch_size = (self.hs.hist_full_size-self.hd) // 2
         self.epoch_len = randint(min_batch_size, max_batch_size)
-        self.rand_start = randint(self.epoch_len, self.hs.hist_full_size - self.epoch_len)
+        self.rand_start = randint(self.hd, self.hs.hist_full_size - self.epoch_len)
         runner = neat.ParallelEvaluator(8, self.evaluate)
         runner.evaluate(genomes, config)
 
