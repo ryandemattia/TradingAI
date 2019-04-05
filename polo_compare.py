@@ -30,7 +30,7 @@ class PurpleTrader:
             "band_threshold": 0.00013,
             "iteration_level": 3,
             "division_threshold": 0.00013,
-            "max_weight": 5.0,
+            "max_weight": 3.0,
             "activation": "tanh"}
 
 
@@ -123,9 +123,10 @@ class PurpleTrader:
         self.cppn = the_cppn
         
     def run_champs(self):
-        genomes = neat.Checkpointer.restore_checkpoint("./binance_champs_2/tradegod-checkpoint-11").population
+        genomes = neat.Checkpointer.restore_checkpoint("./binance_champs_2/tradegod-checkpoint-32").population
         fitness_data = {}
         best_fitness = 0.0
+        best_ix = ""
         count = 0
         for g_ix in genomes:
             self.load_net_easy(genomes[g_ix])
@@ -133,7 +134,12 @@ class PurpleTrader:
             network = ESNetwork(self.subStrate, self.cppn, self.params)
             net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(g_ix))
             fitness = self.evaluate(net, network, start, genomes[g_ix], g_ix)
+            if (fitness > best_fitness):
+                best_fitness = fitness
+                best_ix = genomes[g_ix]
             count += 1
+        with open('./binance_champs_2/perpetual_champion_'+str(g_ix)+'.pkl', 'wb') as output:
+            pickle.dump(best_ix, output)
 
     def evaluate(self, network, es, rand_start, g, p_name):
         portfolio_start = 1.0
@@ -228,7 +234,7 @@ class PurpleTrader:
             if(g.fitness > fitter_val):
                 fitter = g
                 fitter_val = g.fitness
-        with open('./champs/perpetual_champion_'+str(fitter.key)+'.pkl', 'wb') as output:
+        with open('./binance_champs_2/perpetual_champion_'+str(fitter.key)+'.pkl', 'wb') as output:
             pickle.dump(fitter, output)
         print("latest_saved")
 # Create the population and run the XOR task by providing the above fitness function.

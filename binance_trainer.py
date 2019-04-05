@@ -30,7 +30,7 @@ class PurpleTrader:
             "band_threshold": 0.00013,
             "iteration_level": 3,
             "division_threshold": 0.00013,
-            "max_weight": 7.0,
+            "max_weight": 3.0,
             "activation": "tanh"}
 
 
@@ -49,7 +49,7 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_binance_frames_vol_sorted(8)
+        self.hs.combine_binance_frames_vol_sorted(21)
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.hist_shaped[0])
@@ -160,7 +160,7 @@ class PurpleTrader:
         min_batch_size = (self.hs.hist_full_size-self.hd) // 5
         max_batch_size = (self.hs.hist_full_size-self.hd) // 2
         self.epoch_len = randint(min_batch_size, max_batch_size)
-        self.rand_start = randint(0+self.hd, self.hs.hist_full_size - self.epoch_len)
+        self.rand_start = randint(self.epoch_len, self.hs.hist_full_size - self.epoch_len)
         runner = neat.ParallelEvaluator(8, self.evaluate)
         runner.evaluate(genomes, config)
 
@@ -180,9 +180,9 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(89)
+    task = PurpleTrader(8)
     #print(task.trial_run())
-    winner = run_pop(task, 55)[0]
+    winner = run_pop(task, 89)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
