@@ -22,6 +22,7 @@ import _pickle as pickle
 from pureples.shared.substrate import Substrate
 from pureples.shared.visualize import draw_net
 from pureples.es_hyperneat.es_hyperneat_torch import ESNetwork
+from NTree import nDimensionTree
 #polo = Poloniex('key', 'secret')
 key = ""
 secret = ""
@@ -210,13 +211,15 @@ class LiveTrader:
         self.poloTrader()
 
 class PaperTrader:
+    in_shapes = []
+    out_shapes = []
     params = {"initial_depth": 2,
             "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
             "iteration_level": 3,
             "division_threshold": 0.00013,
-            "max_weight": 5.0,
+            "max_weight": 3.0,
             "activation": "tanh"}
 
     # Config for CPPN.
@@ -233,12 +236,14 @@ class PaperTrader:
         self.refresh_data()
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = self.hs.hist_shaped.shape[0]
-        self.make_shapes()
         self.folio = CryptoFolio(start_amount, list(self.hs.currentHists.keys()))
         self.leaf_names = []
-        for l in range(len(self.in_shapes[0])):
-            self.leaf_names.append('leaf_one_'+str(l))
-            self.leaf_names.append('leaf_two_'+str(l))
+        #num_leafs = 2**(len(self.node_names)-1)//2
+        self.tree = nDimensionTree((0.0, 0.0, 0.0), 1.0, 1)
+        self.tree.divide_childrens()
+        self.set_substrate()
+        self.set_leaf_names()
+        self.epoch_len = self.hist_depth
         self.load_net()
         print(self.hs.coin_dict)
         self.poloTrader()
@@ -246,29 +251,33 @@ class PaperTrader:
     def refresh_data(self):
         self.hs.pull_polo_live(21)
         self.hs.combine_live_frames(89)
-
+    def set_leaf_names(self):
+        for l in range(len(self.in_shapes[0])):
+            self.leaf_names.append('leaf_one_'+str(l))
+            self.leaf_names.append('leaf_two_'+str(l))
+        #self.leaf_names.append('bias')
+    def set_substrate(self):
+        sign = 1
+        x_increment = 1.0 / self.outputs
+        y_increment = 1.0 / len(self.hs.hist_shaped[0][0])
+        for ix in range(self.outputs):
+            self.out_shapes.append((1.0-(ix*x_increment), 0.0, -1.0))
+            for ix2 in range(self.inputs//self.outputs):
+                if(ix2 >= len(self.tree.cs)-1):
+                    treex = ix2 - len(self.tree.cs)-1
+                else:
+                    treex = ix2
+                center = self.tree.cs[treex]
+                self.in_shapes.append((center.coord[0]+(ix*x_increment), center.coord[1] - (ix2*y_increment), center.coord[2]+.5))
+        self.subStrate = Substrate(self.in_shapes, self.out_shapes)
     def load_net(self):
         #file = open("./champ_gens/thot-checkpoint-13",'rb')
-        g = neat.Checkpointer.restore_checkpoint("./champ_gens/thot-checkpoint-25")
+        g = neat.Checkpointer.restore_checkpoint("./binance_champs_2/tradegod-checkpoint-32")
         best_fit = 0.0
-        for gx in g.population:
-            if g.population[gx].fitness != None:
-                if g.population[gx].fitness > best_fit:
-                    bestg = g.population[gx]
-        g = bestg
+        g = g.population[4040]
         #file.close()
         [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
         self.cppn = the_cppn
-
-    def make_shapes(self):
-        self.in_shapes = []
-        self.out_shapes = []
-        sign = 1
-        for ix in range(1,self.outputs+1):
-            sign = sign *-1
-            self.out_shapes.append((0.0-(sign*.005*ix), -1.0, -1.0))
-            for ix2 in range(1,(self.inputs//self.outputs)+1):
-                self.in_shapes.append((0.0+(sign*.01*ix2), 0.0-(sign*.01*ix2), 1.0))
 
     def reset_tickers(self):
         try:
@@ -309,13 +318,16 @@ class PaperTrader:
         network = ESNetwork(sub, self.cppn, self.params)
         net = network.create_phenotype_network_nd('paper_net.png')
         net.reset()
+        signals = []
         for n in range(1, self.hist_depth+1):
             out = net.activate(active[self.hist_depth-n])
-        #print(len(out))
-        rng = len(out)
+        for x in range(len(out)):
+            signals.append(out[x])
         #rng = iter(shuffle(rng))
-        self.reset_tickers()
-        for x in np.random.permutation(rng):
+        sorted_shit = np.argsort(signals)[::-1]
+        #print(sorted_shit, len(sorted_shit))
+        #print(len(sorted_shit), len(key_list))
+        for x in sorted_shit:
             sym = self.hs.coin_dict[x]
             #print(out[x])
             try:
@@ -350,4 +362,4 @@ class PaperTrader:
 
 
 #LiveTrader(7200, .34, 34)
-PaperTrader(7200, 1.0 , 34)
+PaperTrader(7200, 1.0 , 8)
