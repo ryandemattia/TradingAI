@@ -123,7 +123,7 @@ class PurpleTrader:
         self.cppn = the_cppn
 
     def run_champs(self):
-        genomes = neat.Checkpointer.restore_checkpoint("tradegod-checkpoint-88").population
+        genomes = neat.Checkpointer.restore_checkpoint("tradegod-checkpoint-60").population
         fitness_data = {}
         best_fitness = 0.0
         for g_ix in genomes:
