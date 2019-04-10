@@ -141,6 +141,16 @@ class PurpleTrader:
         with open('./binance_champs_2/perpetual_champion_'+str(g_ix)+'.pkl', 'wb') as output:
             pickle.dump(best_ix, output)
 
+    def run_champ(self):
+        genome = neat.Checkpointer.restore_checkpoint("./binance_champs_2/tradegod-checkpoint-32").population[4040]
+        self.load_net_easy(genome)
+        start = self.hs.hist_full_size - self.epoch_len
+        network = ESNetwork(self.subStrate, self.cppn, self.params)
+        net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(4040))
+        fitness = self.evaluate(net, network, start, genome, 4040)
+        with open('./binance_champs_2/perpetual_champion_'+str(4040)+'.pkl', 'wb') as output:
+            pickle.dump(genome, output)
+
     def evaluate(self, network, es, rand_start, g, p_name):
         portfolio_start = 1.0
         portfolio = CryptoFolio(portfolio_start, list(self.hs.currentHists.keys()))
@@ -241,4 +251,4 @@ class PurpleTrader:
 
 
 pt = PurpleTrader(8)
-pt.run_champs()
+pt.run_champ()
