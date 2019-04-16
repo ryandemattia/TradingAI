@@ -24,13 +24,13 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2,
-            "max_depth": 3,
+    params = {"initial_depth": 3,
+            "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
             "iteration_level": 3,
             "division_threshold": 0.00013,
-            "max_weight": 7.0,
+            "max_weight": 3.0,
             "activation": "tanh"}
 
 
@@ -52,7 +52,7 @@ class PurpleTrader:
         self.hs.combine_polo_frames_vol_sorted()
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
-        self.end_idx = len(self.hs.currentHists["ETH"])
+        self.end_idx = len(self.hs.hist_shaped[0])
         self.but_target = .1
         self.inputs = self.hs.hist_shaped.shape[0]*(self.hs.hist_shaped[0].shape[1])
         self.outputs = self.hs.hist_shaped.shape[0]
@@ -130,8 +130,16 @@ class PurpleTrader:
             self.load_net_easy(genomes[g_ix])
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
-            net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(g_ix))
+            net = network.create_phenotype_network_nd('./champs_visualizedd-3/genome_'+str(g_ix))
             fitness = self.evaluate(net, network, start, genomes[g_ix], g_ix)
+
+    def run_champ(self, g_ix):
+        genomes = neat.Checkpointer.restore_checkpoint("./tradegod-checkpoint-28").population
+        self.load_net_easy(genomes[g_ix])
+        start = self.hs.hist_full_size - self.epoch_len
+        network = ESNetwork(self.subStrate, self.cppn, self.params)
+        net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(g_ix))
+        fitness = self.evaluate(net, network, start, genomes[g_ix], g_ix)
 
     def evaluate(self, network, es, rand_start, g, p_name):
         portfolio_start = 1.0
@@ -228,5 +236,5 @@ class PurpleTrader:
 # Create the population and run the XOR task by providing the above fitness function.
 
 
-pt = PurpleTrader(34)
-pt.run_champs()
+pt = PurpleTrader(8)
+pt.run_champ(3844)
