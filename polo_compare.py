@@ -148,16 +148,16 @@ class PurpleTrader:
         port_ref = portfolio_start
         with open('./champs_histd3/trade_hist'+ str(p_name) + '.txt', 'w') as ft:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
-            for z in range(self.hs.hist_full_size-377, self.hs.hist_full_size -1):
+            for z in range(self.hd, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
                 signals = []
                 network.reset()
-                for n in range(1, self.hd+1):
-                    out = network.activate(active[self.hd-n])
+                for n in range(self.hd):
+                    out = network.activate(active[(z-self.hd)+n])
                 for x in range(len(out)):
                     signals.append(out[x])
                     sym2 = list(self.hs.currentHists.keys())[x]
-                    end_prices[sym2] = self.hs.currentHists[sym2]['close'][self.hs.hist_full_size-1]
+                    end_prices[sym2] = self.hs.currentHists[sym2]['close'][z]
                 sorted_shit = np.argsort(signals)[::-1]
                 #rng = iter(shuffle(rng))
                 for x in sorted_shit:
@@ -194,9 +194,6 @@ class PurpleTrader:
                         ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
                         #print("sold ", sym)
                 new_ref = portfolio.get_total_btc_value_no_sell(end_prices)[0]
-                if(new_ref > 1.05 * port_ref):
-                    port_ref = portfolio.get_total_btc_value_no_sell(end_prices)[0]
-                    portfolio.start = port_ref
                     #skip the hold case because we just dont buy or sell heh
         result_val = portfolio.get_total_btc_value(end_prices)
         print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2], p_name)
