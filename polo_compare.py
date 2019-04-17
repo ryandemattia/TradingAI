@@ -234,4 +234,4 @@ class PurpleTrader:
 
 
 pt = PurpleTrader(8)
-pt.run_champs()
+pt.run_champs(3365)
