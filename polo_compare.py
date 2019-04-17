@@ -49,7 +49,7 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_polo_frames_vol_sorted()
+        self.hs.combine_binance_frames_vol_sorted(21)
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.hist_shaped[0])
@@ -123,18 +123,18 @@ class PurpleTrader:
         self.cppn = the_cppn
 
     def run_champs(self):
-        genomes = neat.Checkpointer.restore_checkpoint("tradegod-checkpoint-60").population
+        genomes = neat.Checkpointer.restore_checkpoint("tradegod-checkpoint-28").population
         fitness_data = {}
         best_fitness = 0.0
         for g_ix in genomes:
             self.load_net_easy(genomes[g_ix])
             start = self.hs.hist_full_size - self.epoch_len
             network = ESNetwork(self.subStrate, self.cppn, self.params)
-            net = network.create_phenotype_network_nd('./champs_visualizedd-3/genome_'+str(g_ix))
+            net = network.create_phenotype_network_nd('./champs_visualizedd3/genome_'+str(g_ix))
             fitness = self.evaluate(net, network, start, genomes[g_ix], g_ix)
 
     def run_champ(self, g_ix):
-        genomes = neat.Checkpointer.restore_checkpoint("./tradegod-checkpoint-28").population
+        genomes = neat.Checkpointer.restore_checkpoint("./tradegod-checkpoint-27").population
         self.load_net_easy(genomes[g_ix])
         start = self.hs.hist_full_size - self.epoch_len
         network = ESNetwork(self.subStrate, self.cppn, self.params)
@@ -237,4 +237,4 @@ class PurpleTrader:
 
 
 pt = PurpleTrader(8)
-pt.run_champ(3844)
+pt.run_champs()
