@@ -96,16 +96,16 @@ class PurpleTrader:
         master_active = []
         for x in range(0, self.hd):
             active = []
-            #print(self.outputs)
+            
             for y in range(0, self.outputs):
                 try:
                     sym_data = self.hs.hist_shaped[y][end_idx-x]
-                    #print(len(sym_data))
+                    
                     active += sym_data.tolist()
                 except:
                     print('error')
             master_active.append(active)
-        #print(active)
+        
         return master_active
 
     def evaluate(self, g, config):
@@ -147,7 +147,7 @@ class PurpleTrader:
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
                     if(z > self.epoch_len+rand_start-2):
-                        end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
+                        end_prices[sym] = self.hs.currentHists[sym]['close'][z]
             result_val = portfolio.get_total_btc_value(end_prices)
             print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
             ft = result_val[0]

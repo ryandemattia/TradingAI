@@ -152,8 +152,8 @@ class PurpleTrader:
                 active = self.get_one_epoch_input(z)
                 signals = []
                 network.reset()
-                for n in range(self.hd):
-                    out = network.activate(active[(z-self.hd)+n])
+                for n in range(len(self.hd)):
+                    out = network.activate(active[n])
                 for x in range(len(out)):
                     signals.append(out[x])
                     sym2 = list(self.hs.currentHists.keys())[x]
@@ -173,7 +173,7 @@ class PurpleTrader:
                             ft.write('sell,')
                             ft.write(str(portfolio.ledger[sym])+",")
                             ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
-                            ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
+                            ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[z])+ " \n")
                         #print("bought ", sym)
                     elif(out[x] > .5):
                         did_buy = portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
@@ -184,14 +184,14 @@ class PurpleTrader:
                             ft.write('buy,')
                             ft.write(str(portfolio.target_amount)+",")
                             ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
-                            ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
+                            ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[z])+ " \n")
                     else:
                         ft.write(str(self.hs.currentHists[sym]['date'][z]) + ",")
                         ft.write(sym +",")
                         ft.write('none,')
                         ft.write("0.0,")
                         ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
-                        ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
+                        ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[z])+ " \n")
                         #print("sold ", sym)
                 new_ref = portfolio.get_total_btc_value_no_sell(end_prices)[0]
                     #skip the hold case because we just dont buy or sell heh
