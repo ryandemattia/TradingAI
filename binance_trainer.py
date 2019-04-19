@@ -11,7 +11,7 @@ from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 from random import randint, shuffle
 # Local
-import neat.ctrnn 
+import neat.ctrnn
 import neat
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
@@ -24,13 +24,13 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2,
+    params = {"initial_depth": 3,
             "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
             "iteration_level": 3,
             "division_threshold": 0.00013,
-            "max_weight": 7.0,
+            "max_weight": 3.0,
             "activation": "tanh"}
 
 
@@ -65,14 +65,14 @@ class PurpleTrader:
         self.tree.divide_childrens()
         self.set_substrate()
         self.set_leaf_names()
-        
+
 
     def set_leaf_names(self):
         for l in range(len(self.in_shapes[0])):
             self.leaf_names.append('leaf_one_'+str(l))
             self.leaf_names.append('leaf_two_'+str(l))
         #self.leaf_names.append('bias')
-    
+
     def set_substrate(self):
         sign = 1
         x_increment = 1.0 / self.outputs
@@ -96,16 +96,16 @@ class PurpleTrader:
         master_active = []
         for x in range(0, self.hd):
             active = []
-            #print(self.outputs)
+            
             for y in range(0, self.outputs):
                 try:
                     sym_data = self.hs.hist_shaped[y][end_idx-x]
-                    #print(len(sym_data))
+                    
                     active += sym_data.tolist()
                 except:
                     print('error')
             master_active.append(active)
-        #print(active)
+        
         return master_active
 
     def evaluate(self, g, config):
@@ -147,7 +147,7 @@ class PurpleTrader:
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
                     if(z > self.epoch_len+rand_start-2):
-                        end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
+                        end_prices[sym] = self.hs.currentHists[sym]['close'][z]
             result_val = portfolio.get_total_btc_value(end_prices)
             print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
             ft = result_val[0]
@@ -180,9 +180,9 @@ def run_pop(task, gens):
 
 # If run as script.
 if __name__ == '__main__':
-    task = PurpleTrader(89)
+    task = PurpleTrader(8)
     #print(task.trial_run())
-    winner = run_pop(task, 55)[0]
+    winner = run_pop(task, 89)[0]
     print('\nBest genome:\n{!s}'.format(winner))
 
     # Verify network output against training data.
