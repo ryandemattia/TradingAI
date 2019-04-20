@@ -30,7 +30,7 @@ class HistWorker:
         self.hist_shaped = {}
         self.coin_dict = {}
         #self.combine_frames()
-        self.look_back = 666
+        self.look_back = 2160
         self.hist_full_size = 666*12
         self.binance_client = Client("", "")
         return
@@ -110,7 +110,7 @@ class HistWorker:
             frame[x] = frame[x][:6]
         frame = pd.DataFrame(frame, columns=["date", "open", "high", "low", "close", "volume"])
         return frame
-    
+
     def write_binance_training_files(self, syms):
         for s in range(len(syms)):
             frame = self.get_binance_hist_frame(syms[s])
@@ -238,7 +238,7 @@ class HistWorker:
                 self.coin_dict[coin_and_hist_index] = col_prefix
                 coin_and_hist_index += 1
         self.hist_shaped = pd.Series(self.hist_shaped)
-        
+
     def combine_frames(self):
         length = 7992
         fileNames = self.get_hist_files()
@@ -360,5 +360,3 @@ class HistWorker:
             main = main.join(df_list[i])
         return main
         '''
-
-

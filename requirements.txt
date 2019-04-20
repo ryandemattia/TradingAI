@@ -75,8 +75,6 @@ sortedcontainers==1.5.9
 SQLAlchemy==1.2.2
 statsmodels==0.8.0
 tables==3.4.2
-tensorboard==1.10.0
-tensorflow==1.10.0
 termcolor==1.1.0
 toolz==0.9.0
 urllib3==1.22

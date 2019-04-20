@@ -49,7 +49,7 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_polo_frames_vol_sorted()
+        self.hs.combine_binance_frames_vol_sorted(21)
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.hist_shaped[0])
@@ -63,7 +63,6 @@ class PurpleTrader:
         self.set_substrate()
         self.set_leaf_names()
         self.epoch_len = hist_depth
-        
 
     def set_leaf_names(self):
         for l in range(len(self.in_shapes[0])):
@@ -84,7 +83,6 @@ class PurpleTrader:
                 center = self.tree.cs[treex]
                 self.in_shapes.append((center.coord[0]+(ix*x_increment), center.coord[1] - (ix2*y_increment), center.coord[2]+.5))
         self.subStrate = Substrate(self.in_shapes, self.out_shapes)
-
     def set_portfolio_keys(self, folio):
         for k in self.hs.currentHists.keys():
             folio.ledger[k] = 0
@@ -121,7 +119,7 @@ class PurpleTrader:
     def load_net_easy(self, g):
         [the_cppn] = create_cppn(g, self.config, self.leaf_names, ['cppn_out'])
         self.cppn = the_cppn
-        
+
     def run_champs(self):
         genomes = neat.Checkpointer.restore_checkpoint("./binance_champs_2/tradegod-checkpoint-32").population
         fitness_data = {}
@@ -158,12 +156,12 @@ class PurpleTrader:
         port_ref = portfolio_start
         with open('./champs_histd3/trade_hist'+ str(p_name) + '.txt', 'w') as ft:
             ft.write('date,symbol,type,amnt,price,current_balance \n')
-            for z in range(34, self.hs.hist_full_size -1):
+            for z in range(self.hd, self.hs.hist_full_size -1):
                 active = self.get_one_epoch_input(z)
                 signals = []
                 network.reset()
-                for n in range(1, self.hd+1):
-                    out = network.activate(active[self.hd-n])
+                for n in range(len(self.hd)):
+                    out = network.activate(active[n])
                 for x in range(len(out)):
                     signals.append(out[x])
                     sym2 = list(self.hs.currentHists.keys())[x]
@@ -184,7 +182,7 @@ class PurpleTrader:
                             ft.write('sell,')
                             ft.write(str(portfolio.ledger[sym])+",")
                             ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
-                            ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
+                            ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[z])+ " \n")
                         #print("bought ", sym)
                     elif(out[x] > .5):
                         did_buy = portfolio.buy_coin(sym, self.hs.currentHists[sym]['close'][z])
@@ -195,14 +193,14 @@ class PurpleTrader:
                             ft.write('buy,')
                             ft.write(str(portfolio.target_amount)+",")
                             ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
-                            ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
+                            ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[z])+ " \n")
                     else:
                         ft.write(str(self.hs.currentHists[sym]['date'][z]) + ",")
                         ft.write(sym +",")
                         ft.write('none,')
                         ft.write("0.0,")
                         ft.write(str(self.hs.currentHists[sym]['close'][z])+",")
-                        ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[0])+ " \n")
+                        ft.write(str(portfolio.get_total_btc_value_no_sell(end_prices)[z])+ " \n")
                         #print("sold ", sym)
                 new_ref = portfolio.get_total_btc_value_no_sell(end_prices)[0]
                 '''                
@@ -251,4 +249,4 @@ class PurpleTrader:
 
 
 pt = PurpleTrader(8)
-pt.run_champ()
+pt.run_champ(4040)

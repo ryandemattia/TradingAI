@@ -11,7 +11,7 @@ from hist_service import HistWorker
 from crypto_evolution import CryptoFolio
 from random import randint, shuffle
 # Local
-import neat.ctrnn 
+import neat.ctrnn
 import neat
 import _pickle as pickle
 from pureples.shared.substrate import Substrate
@@ -65,14 +65,14 @@ class PurpleTrader:
         self.tree.divide_childrens()
         self.set_substrate()
         self.set_leaf_names()
-        
+
 
     def set_leaf_names(self):
         for l in range(len(self.in_shapes[0])):
             self.leaf_names.append('leaf_one_'+str(l))
             self.leaf_names.append('leaf_two_'+str(l))
         #self.leaf_names.append('bias')
-    
+
     def set_substrate(self):
         sign = 1
         x_increment = 1.0 / self.outputs
@@ -96,16 +96,16 @@ class PurpleTrader:
         master_active = []
         for x in range(0, self.hd):
             active = []
-            #print(self.outputs)
+            
             for y in range(0, self.outputs):
                 try:
                     sym_data = self.hs.hist_shaped[y][end_idx-x]
-                    #print(len(sym_data))
+                    
                     active += sym_data.tolist()
                 except:
                     print('error')
             master_active.append(active)
-        #print(active)
+        
         return master_active
 
     def evaluate(self, g, config):
