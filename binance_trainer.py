@@ -24,7 +24,7 @@ class PurpleTrader:
     #needs to be initialized so as to allow for 62 outputs that return a coordinate
 
     # ES-HyperNEAT specific parameters.
-    params = {"initial_depth": 2,
+    params = {"initial_depth": 3,
             "max_depth": 4,
             "variance_threshold": 0.00013,
             "band_threshold": 0.00013,
@@ -49,7 +49,7 @@ class PurpleTrader:
     out_shapes = []
     def __init__(self, hist_depth):
         self.hs = HistWorker()
-        self.hs.combine_binance_frames_vol_sorted(21)
+        self.hs.combine_binance_frames_vol_sorted(13)
         self.hd = hist_depth
         print(self.hs.currentHists.keys())
         self.end_idx = len(self.hs.hist_shaped[0])
@@ -124,8 +124,8 @@ class PurpleTrader:
                 active = self.get_one_epoch_input(z)
                 signals = []
                 network.reset()
-                for n in range(1, self.hd+1):
-                    out = network.activate(active[self.hd-n])
+                for n in range(self.hd):
+                    out = network.activate(active[(self.hd-1)-n])
                 for x in range(len(out)):
                     signals.append(out[x])
                 #rng = iter(shuffle(rng))
@@ -147,7 +147,7 @@ class PurpleTrader:
                         #print("sold ", sym)
                     #skip the hold case because we just dont buy or sell hehe
                     if(z > self.epoch_len+rand_start-2):
-                        end_prices[sym] = self.hs.currentHists[sym]['close'][self.epoch_len+rand_start]
+                        end_prices[sym] = self.hs.currentHists[sym]['close'][z]
             result_val = portfolio.get_total_btc_value(end_prices)
             print(result_val[0], "buys: ", result_val[1], "sells: ", result_val[2])
             ft = result_val[0]
@@ -157,8 +157,8 @@ class PurpleTrader:
 
 
     def eval_fitness(self, genomes, config):
-        max_batch_size = (self.hs.hist_full_size-self.hd) // 13
-        min_batch_size = (self.hs.hist_full_size-self.hd) // 5
+        min_batch_size = (self.hs.hist_full_size-self.hd) // 13
+        max_batch_size = (self.hs.hist_full_size-self.hd) // 5
         self.epoch_len = randint(min_batch_size, max_batch_size)
         self.rand_start = randint(self.hd, self.hs.hist_full_size - self.epoch_len)
         runner = neat.ParallelEvaluator(8, self.evaluate)

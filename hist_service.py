@@ -361,5 +361,4 @@ class HistWorker:
         return main
         '''
 
-hs = HistWorker()
-hs.combine_binance_frames_vol_sorted()
+
