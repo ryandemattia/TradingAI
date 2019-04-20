@@ -230,7 +230,7 @@ class PaperTrader:
         self.polo = Poloniex()
         self.hist_depth = histdepth
         self.ticker_len = ticker_len
-        self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*24))
+        self.end_ts = datetime.now()+timedelta(seconds=(ticker_len*120))
         self.start_amount = start_amount
         self.hs = HistWorker()
         self.refresh_data()
