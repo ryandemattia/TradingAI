@@ -40,7 +40,7 @@ jmespath==0.9.3
 kiwisolver==1.0.1
 Logbook==0.12.5
 lru-dict==1.1.6
-lxml==4.2.4
+lxml==4.6.5
 Mako==1.0.7
 Markdown==2.6.11
 MarkupSafe==1.0
