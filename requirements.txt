@@ -49,7 +49,7 @@ multidict==4.4.0
 multipledispatch==0.4.9
 networkx==2.1
 numexpr==2.6.4
-numpy==1.14.0
+numpy==1.22.0
 pandas==0.19.2
 pandas-datareader==0.6.0
 parsimonious==0.8.0
