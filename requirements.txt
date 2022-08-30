@@ -23,7 +23,7 @@ docutils==0.14
 empyrical==0.2.1
 enigma-catalyst==0.5.19
 eth-abi==1.2.0
-eth-account==0.2.3
+eth-account==0.5.9
 eth-hash==0.1.4
 eth-keyfile==0.5.1
 eth-keys==0.2.0b3
